@@ -4,18 +4,21 @@ import { ArrowRight, Filter, Search, SearchX, SlidersHorizontal } from 'lucide-r
 import { domains, entities } from '../data/ontology';
 import EntityCard from '../components/EntityCard';
 import { useClinicalCollection } from '../hooks/useClinicalRecords';
+import ClinicalSource from '../components/ClinicalSource';
 
 export default function SearchPage() {
   const [params,setParams] = useSearchParams();
   const query = params.get('q') ?? '';
   const [filter,setFilter] = useState('all');
-  const { data: livePatients } = useClinicalCollection('patients');
-  const { data: liveConditions } = useClinicalCollection('conditions');
+  const patients = useClinicalCollection('patients');
+  const conditions = useClinicalCollection('conditions');
+  const livePatients = patients.data;
+  const liveConditions = conditions.data;
   const searchable = useMemo(() => [
-    ...entities.filter(item => !(item.domain === 'patients' && livePatients) && !(item.domain === 'conditions' && liveConditions)),
+    ...entities.filter(item => item.domain === 'patients' ? patients.status === 'unavailable' : item.domain === 'conditions' ? conditions.status === 'unavailable' : true),
     ...(livePatients ?? []),
     ...(liveConditions ?? []),
-  ], [livePatients, liveConditions]);
+  ], [livePatients, liveConditions, patients.status, conditions.status]);
   const matches = useMemo(() => searchable.filter(entity => {
     const text = [entity.id,entity.name,entity.type,entity.description,...Object.values(entity.properties ?? {})].join(' ').toLowerCase();
     return (filter === 'all' || entity.domain === filter) && text.includes(query.trim().toLowerCase());
@@ -28,6 +31,7 @@ export default function SearchPage() {
       <div className="studio-filters"><span className="filters-label"><SlidersHorizontal size={18}/> Narrow your search</span><div className="filters-wrap"><button className={filter==='all'?'filter-chip active':'filter-chip'} onClick={()=>setFilter('all')}>Everything</button>{domains.map(d=><button className={filter===d.slug?'filter-chip active':'filter-chip'} key={d.slug} onClick={()=>setFilter(d.slug)}>{d.title}</button>)}</div></div>
     </section>
     <div className="section-intro result-intro"><div><span className="eyebrow">KNOWLEDGE LIBRARY</span><h2>{matches.length} {matches.length===1?'result':'results'} found<span className="heading-dot">.</span></h2><p>{query ? `Showing concepts related to “${query}”` : 'Browse the concepts that make up the medical atlas.'}</p></div><span className="result-sort"><Filter size={17}/> All results</span></div>
-    {matches.length ? <div className="entity-grid">{matches.map(entity=><EntityCard key={entity.id} item={entity}/>)}</div> : <div className="empty-state"><span><SearchX size={38}/></span><h3>No matching concepts</h3><p>Try a broader term or remove a filter to explore more of the knowledge base.</p><button className="button-primary" onClick={()=>{setParams({});setFilter('all');}}>Clear search <ArrowRight size={17}/></button></div>}
+    <div className="search-sources"><span>Patients</span><ClinicalSource status={patients.status} retry={patients.retry} preview/><span>Medical conditions</span><ClinicalSource status={conditions.status} retry={conditions.retry} preview/><small>Other collections contain preview data.</small></div>
+    {matches.length ? <div className="entity-grid">{matches.map(entity=><div key={entity.id}><span className="record-source">{entity.domain === 'patients' && patients.status === 'connected' || entity.domain === 'conditions' && conditions.status === 'connected' ? 'LIVE ONTOLOGY' : 'PREVIEW DATA'}</span><EntityCard item={entity}/></div>)}</div> : <div className="empty-state"><span><SearchX size={38}/></span><h3>{patients.status === 'loading' || conditions.status === 'loading' ? 'Loading ontology records…' : 'No matching concepts'}</h3><p>Try a broader term or remove a filter to explore more of the knowledge base.</p><button className="button-primary" onClick={()=>{setParams({});setFilter('all');}}>Clear search <ArrowRight size={17}/></button></div>}
   </div>;
 }

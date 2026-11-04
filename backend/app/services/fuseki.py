@@ -26,6 +26,14 @@ def query_select(sparql: str) -> list[dict[str, dict[str, str]]]:
         )
         response.raise_for_status()
         payload = response.json()
-        return payload['results']['bindings']
+        bindings = payload['results']['bindings']
+        if not isinstance(bindings, list) or any(
+            not isinstance(row, dict) or any(
+                not isinstance(term, dict) or not isinstance(term.get('value'), str)
+                for term in row.values()
+            ) for row in bindings
+        ):
+            raise ValueError('Invalid SPARQL result bindings')
+        return bindings
     except (requests.RequestException, ValueError, KeyError, TypeError) as exc:
         raise FusekiUnavailable('Cannot query the medsemantic dataset in Fuseki') from exc

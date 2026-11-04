@@ -12,7 +12,7 @@ export const domains = [
   {slug:'results',title:'Clinical results',owl:'ResultatClinique',owner:'Aymen',group:'Research',description:'Efficacy, safety and tolerance results',icon:'chart'}
 ] as const;
 export type DomainSlug = typeof domains[number]['slug'];
-export type Entity = {id:string; name:string; domain:DomainSlug; type:string; description:string; properties?:Record<string,string>; relations?:{predicate:string;target:string}[]};
+export type Entity = {id:string; name:string; domain:DomainSlug; type:string; description:string; properties?:Record<string,string>; relations?:{predicate:string;target:string}[]; incomingRelations?:{predicate:string;source:string;sourceDomain:DomainSlug}[]};
 export const entities:Entity[] = [
  {id:'Doliprane',name:'Doliprane',domain:'medications',type:'Antalgique',description:'Analgesic linked to paracetamol and fever relief',relations:[{predicate:'contientPrincipeActif',target:'Paracetamol'},{predicate:'soulage',target:'Fievre'},{predicate:'aPourContreIndication',target:'CI_Paracetamol_InsufHepatique'}]},
  {id:'Glucophage',name:'Glucophage',domain:'medications',type:'Antidiabetique',description:'Antidiabetic treatment connected to metformin',relations:[{predicate:'contientPrincipeActif',target:'Metformine'},{predicate:'traite',target:'DiabeteType2'},{predicate:'aPourContreIndication',target:'CI_Metformine_InsufRenale'}]},

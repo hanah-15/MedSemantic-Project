@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { apiGet } from '../lib/api';
+import { ApiError, apiGet } from '../lib/api';
 import type { DomainSlug, Entity } from '../data/ontology';
 
-type LoadStatus = 'idle' | 'loading' | 'connected' | 'unavailable';
+export type LoadStatus = 'idle' | 'loading' | 'connected' | 'unavailable' | 'not-found' | 'error';
 type LoadResult<T> = { key: string; status: LoadStatus; data: T | null };
 
 const servicePaths = {
@@ -12,13 +12,15 @@ const servicePaths = {
 
 type ClinicalDomain = keyof typeof servicePaths;
 
-function isClinicalDomain(domain?: string): domain is ClinicalDomain {
+export function isClinicalDomain(domain?: string): domain is ClinicalDomain {
   return domain === 'patients' || domain === 'conditions';
 }
 
 /** Shared domain-specific transport; other teammates' pages remain unchanged. */
 function useClinicalResource<T>(key: string, path: string | null) {
   const [result, setResult] = useState<LoadResult<T>>({ key: '', status: 'idle', data: null });
+  const [attempt, setAttempt] = useState(0);
+  const retry = () => setAttempt(current => current + 1);
 
   useEffect(() => {
     if (!path) return;
@@ -26,13 +28,19 @@ function useClinicalResource<T>(key: string, path: string | null) {
     setResult({ key, status: 'loading', data: null });
     apiGet<T>(path, controller.signal)
       .then(data => { if (!controller.signal.aborted) setResult({ key, status: 'connected', data }); })
-      .catch(() => { if (!controller.signal.aborted) setResult({ key, status: 'unavailable', data: null }); });
+      .catch(error => {
+        if (controller.signal.aborted) return;
+        const status = error instanceof ApiError
+          ? error.status === 404 ? 'not-found' : error.status === 503 ? 'unavailable' : 'error'
+          : 'unavailable';
+        setResult({ key, status, data: null });
+      });
     return () => controller.abort();
-  }, [key, path]);
+  }, [key, path, attempt]);
 
-  if (!path) return { data: null, status: 'idle' as LoadStatus };
-  if (result.key !== key) return { data: null, status: 'loading' as LoadStatus };
-  return { data: result.data, status: result.status };
+  if (!path) return { data: null, status: 'idle' as LoadStatus, retry };
+  if (result.key !== key) return { data: null, status: 'loading' as LoadStatus, retry };
+  return { data: result.data, status: result.status, retry };
 }
 
 export function useClinicalCollection(domain?: DomainSlug | string) {

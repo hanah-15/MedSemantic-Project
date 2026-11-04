@@ -9,16 +9,17 @@ Requires Node.js 20.19+ or 22.12+.
 ```powershell
 cd frontend
 npm install
-Copy-Item .env.example .env
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
 npm run dev
 ```
 
-Then open http://localhost:5173.
+Open the URL printed by Vite, usually http://localhost:5173. If that port is occupied, Vite may choose http://localhost:5174. Confirm the terminal belongs to this checkout when another template is running.
 
 ## Production checks
 
 ```powershell
 npm run typecheck
+npm test
 npm run build
 ```
 
@@ -32,10 +33,14 @@ The shared shell, typography, search, graph explorer, and reusable entity cards 
 - `/catalog/patients` and `/catalog/conditions` — Sofiene
 - `/catalog/studies` and `/catalog/results` — Aymen
 - `/search` — shared search interface
-- `/graph` — shared ontology class graph
+- `/graph` — live patient/condition record graph and shared ontology class map
 - `/entity/:id` — reusable detail page
 
-The frontend currently renders illustrative records, not data fetched from Fuseki. The backend exposes its health endpoint at `http://127.0.0.1:8000/` and the shared API adapter is in `src/lib/api.ts`. Replace the local records with FastAPI data when the team's endpoints are implemented. Avoid direct calls from browsers to Fuseki. Do not use these records for clinical decisions.
+Patient and ConditionMedicale collections, profiles, search and the record graph fetch ontology data through FastAPI at `http://127.0.0.1:8000` by default. Set `VITE_API_BASE_URL` in an optional local `.env` to override it. Follow `../backend/README_SOFIENE.md` to start the backend and verify its real Fuseki connection. Browser requests go to FastAPI, never directly to Fuseki.
+
+Other collections still use educational preview records. Clinical pages offer visibly labeled preview records if the API or Fuseki is unavailable; loading, live 404 responses and successful empty collections do not substitute preview records. Search labels record sources, and profile relationship links identify preview target/source profiles. The live graph uses explicit triples only; the separate class map describes the specification. Age categories are calculated from age, without claiming OWL reasoning. Do not use these records for clinical decisions.
+
+`npm test` runs the clinical UI regression suite with Vitest and Testing Library.
 
 ## Design palette
 

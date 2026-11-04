@@ -3,17 +3,22 @@ import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Network, Search, SearchX } from 'lucide-react';
 import { domains, entities } from '../data/ontology';
 import { DomainIcon } from '../components/Icons';
-import { useClinicalCollection } from '../hooks/useClinicalRecords';
+import { isClinicalDomain, useClinicalCollection } from '../hooks/useClinicalRecords';
+import ClinicalSource from '../components/ClinicalSource';
 import EntityCard from '../components/EntityCard';
 
 export default function Collection() {
   const {slug} = useParams();
   const domain = domains.find(d => d.slug === slug);
   const [query,setQuery] = useState('');
-  const { data: liveItems, status } = useClinicalCollection(slug);
-  const domainItems = liveItems ?? entities.filter(entity => entity.domain === slug);
+  const [category,setCategory] = useState('all');
+  const { data: liveItems, status, retry } = useClinicalCollection(slug);
+  const clinical = isClinicalDomain(slug);
+  const domainItems = clinical && status !== 'unavailable' ? liveItems ?? [] : entities.filter(entity => entity.domain === slug);
   if (!domain) return <div className="empty-state"><SearchX size={32}/><h2>Collection not found</h2><Link className="button-primary" to="/">Back to overview <ArrowRight size={17}/></Link></div>;
-  const items = domainItems.filter(entity => [entity.name,entity.type,entity.id].join(' ').toLowerCase().includes(query.trim().toLowerCase()));
+  const categoryKey = slug === 'patients' ? 'ageCategory' : 'category';
+  const categories = [...new Set(domainItems.map(item => item.properties?.[categoryKey]).filter((value): value is string => !!value))].sort();
+  const items = domainItems.filter(entity => [entity.name,entity.type,entity.id,...Object.values(entity.properties ?? {})].join(' ').toLowerCase().includes(query.trim().toLowerCase()) && (category === 'all' || !categories.includes(category) || entity.properties?.[categoryKey] === category));
   return <div className="page-flow inner-page">
     <div className="page-topline"><span className="eyebrow"><span className="eyebrow-indicator"/> THE MEDICAL ATLAS</span><span className="topline-right">ONTOLOGY / {domain.owl.toUpperCase()}</span></div>
     <Link className="back-link" to="/"><ArrowLeft size={17}/> Back to overview</Link>
@@ -23,8 +28,9 @@ export default function Collection() {
       <div className="collection-stat"><strong>{domainItems.length.toString().padStart(2,'0')}</strong><span>CONNECTED ENTRIES</span></div>
     </section>
     <div className="section-intro collection-intro"><div><span className="eyebrow">BROWSE & DISCOVER</span><h2>The collection<span className="heading-dot">.</span></h2><p>Explore the available records and their defined relationships.</p></div><label className="collection-search"><Search size={20}/><input aria-label={'Filter '+domain.title} placeholder={'Search '+domain.title.toLowerCase()+'...'} value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
-    {(slug === 'patients' || slug === 'conditions') && <div className={'source-status source-' + status} role="status">{status === 'connected' ? 'Connected to Fuseki through FastAPI' : status === 'loading' ? 'Loading ontology records...' : 'Preview records · Start FastAPI and Fuseki for live results'}</div>}
-    {items.length ? <div className="entity-grid">{items.map(item=><EntityCard key={item.id} item={item}/>)}</div> : <div className="empty-state"><SearchX size={35}/><h3>No records found</h3><p>Try another keyword or clear your search.</p><button className="button-primary" onClick={()=>setQuery('')}>Show all entries <ArrowRight size={17}/></button></div>}
+    {clinical && <ClinicalSource status={status} retry={retry} preview/>}
+    {clinical && categories.length > 0 && <div className="clinical-filters"><label>{slug === 'patients' ? 'Age category' : 'Condition category'}<select aria-label={slug === 'patients' ? 'Age category' : 'Condition category'} value={categories.includes(category) ? category : 'all'} onChange={event=>setCategory(event.target.value)}><option value="all">All categories</option>{categories.map(value=><option key={value} value={value}>{value}</option>)}</select></label><span>{items.length} of {domainItems.length} records</span></div>}
+    {clinical && status === 'loading' ? <div className="empty-state" role="status"><h3>Loading ontology records…</h3></div> : items.length ? <div className="entity-grid">{items.map(item=><EntityCard key={item.id} item={item}/>)}</div> : <div className="empty-state"><SearchX size={35}/><h3>{status === 'error' ? 'Records could not be loaded' : 'No records found'}</h3><p>{domainItems.length ? 'Try another keyword or clear your filters.' : 'No records were returned. Missing data does not establish the absence of a medical condition.'}</p>{domainItems.length > 0 && <button className="button-primary" onClick={()=>{setQuery('');setCategory('all');}}>Show all entries <ArrowRight size={17}/></button>}</div>}
     <div className="related-banner"><span><Network size={26}/></span><div><strong>There’s more to the story.</strong><p>Every concept is part of a larger system of relationships.</p></div><Link to="/graph">Explore the knowledge graph <ArrowUpRight size={18}/></Link></div>
   </div>;
 }

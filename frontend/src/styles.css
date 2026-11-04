@@ -389,3 +389,27 @@ button:focus-visible, a:focus-visible, input:focus-visible, .graph-node:focus-vi
 .source-connected { background: #e5f6ef; color: #17755f; border-color: #bce8d7; }
 .source-connected::before { background: #1aa481; }
 .source-loading::before { background: #d79b3d; }
+.source-status { flex-wrap: wrap; }
+.source-status button { border: 0; border-radius: 6px; padding: 5px 9px; color: #176c70; background: #fff; font: inherit; cursor: pointer; }
+.source-unavailable,.source-error,.source-not-found { color: #866130; background: #fff8ea; border-color: #ebdabb; }
+.clinical-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; color: #5a7784; font-size: 14px; }
+.clinical-filters label { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-weight: 600; }
+.clinical-filters select { max-width: 100%; min-height: 42px; padding: 9px 32px 9px 12px; background: white; color: #244e5d; border: 1px solid #cbdfe4; border-radius: 9px; font: inherit; }
+.clinical-filters select:focus-visible,.source-status button:focus-visible { outline: 3px solid #69c9bc; outline-offset: 3px; }
+.search-sources { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #5a7784; font-size: 14px; }
+.search-sources small { flex-basis: 100%; font-size: 13px; }
+.record-source { display: block; font-size: 11px; letter-spacing: 1px; color: #56848b; font-weight: 700; margin-bottom: 8px; }
+.entity-grid > div > .entity-card { height: calc(100% - 24px); }
+.relationship-source { display: block; font-size: 12px; color: #698794; font-weight: 400; margin-top: 4px; }
+.condition-path { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: #44717c; background: #edf7f5; border: 1px solid #cce8df; padding: 16px 20px; border-radius: 12px; font-size: 14px; }
+.clinical-graph header h2 { margin: 0; font-size: 21px; }
+.clinical-graph-body { padding: 22px; display: flex; flex-direction: column; align-items: stretch; gap: 18px; }
+.clinical-graph-body .source-status { align-self: flex-start; }
+.record-graph-scroll { overflow-x: auto; border: 1px solid #e0ebee; border-radius: 12px; background: #fafdfd; }
+.record-graph { display: block; width: 100%; min-width: 690px; }
+.record-graph-label { font: 600 15px var(--heading); fill: #244e5d; }
+.record-graph-predicate { font: 14px ui-monospace,Consolas,monospace; fill: #087f8c; }
+.record-edge-links { display: grid; gap: 12px; }
+.record-edge-links > div { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 14px; color: #617e8b; }
+.record-edge-links a { display: inline-flex; align-items: center; gap: 8px; overflow-wrap: anywhere; color: #087f8c; }
+.graph-source-note { margin: 0; font-size: 13px; line-height: 1.7; color: #6e8996; }

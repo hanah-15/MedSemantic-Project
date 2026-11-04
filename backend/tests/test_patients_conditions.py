@@ -88,6 +88,34 @@ def test_explicit_patient_condition_link_is_returned(client: TestClient, graph):
     assert response.json() == ['InsufRenaleSevere']
     profile = client.get('/api/patients/Patient_Karim').json()
     assert {'predicate': 'aPourCondition', 'target': 'InsufRenaleSevere'} in profile['relations']
+    condition = client.get('/api/conditions/InsufRenaleSevere').json()
+    assert {'predicate': 'aPourCondition', 'source': 'Patient_Karim', 'sourceDomain': 'patients'} in condition['incomingRelations']
+
+
+def test_condition_incoming_links_are_explicit_and_deduplicated(client: TestClient, graph):
+    from rdflib import Namespace, RDF, RDFS
+    med = Namespace('http://www.semanticweb.org/medsemantic#')
+    graph.add((med.ContreIndicationAbsolue, RDFS.subClassOf, med.ContreIndication))
+    graph.add((med.CI_Test, RDF.type, med.ContreIndicationAbsolue))
+    graph.add((med.CI_Test, RDF.type, med.ContreIndication))
+    graph.add((med.CI_Test, med.concerneCondition, med.AllergiePenicilline))
+    response = client.get('/api/conditions/AllergiePenicilline')
+    assert response.status_code == 200
+    links = response.json()['incomingRelations']
+    assert links.count({'predicate': 'concerneCondition', 'source': 'CI_Test', 'sourceDomain': 'contraindications'}) == 1
+    assert not any(link['sourceDomain'] == 'patients' for link in links)
+
+
+@pytest.mark.parametrize('bindings', [None, {}, [None], [{'entity': {}}], [{'entity': {'value': 42}}]])
+def test_malformed_fuseki_results_return_service_error(monkeypatch, bindings):
+    class Response:
+        def raise_for_status(self):
+            pass
+        def json(self):
+            return {'results': {'bindings': bindings}}
+    monkeypatch.setattr(fuseki.requests, 'post', lambda *args, **kwargs: Response())
+    with pytest.raises(fuseki.FusekiUnavailable):
+        fuseki.query_select('SELECT * WHERE { ?s ?p ?o }')
 
 
 def test_fuseki_query_uses_configured_dataset(monkeypatch):

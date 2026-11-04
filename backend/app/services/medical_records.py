@@ -1,6 +1,7 @@
 """Map SPARQL binding rows to stable, UI-friendly API records."""
 
 from collections import defaultdict
+import re
 from typing import Any
 from urllib.parse import unquote
 
@@ -33,6 +34,7 @@ def age_class(age: int | None) -> str | None:
 def build_records(rows: list[dict[str, Any]], domain: str) -> list[dict[str, Any]]:
     records: dict[str, dict[str, Any]] = {}
     seen_links: dict[str, set[tuple[str, str]]] = defaultdict(set)
+    seen_incoming: dict[str, set[tuple[str, str]]] = defaultdict(set)
 
     for row in rows:
         entity_uri = binding_value(row, 'entity')
@@ -42,7 +44,7 @@ def build_records(rows: list[dict[str, Any]], domain: str) -> list[dict[str, Any
         if identifier not in records:
             records[identifier] = {
                 'id': identifier,
-                'name': identifier.replace('_', ' '),
+                'name': re.sub(r'(?<=[a-z])(?=[A-Z])', ' ', identifier.replace('_', ' ')),
                 'domain': domain,
                 'type': 'Patient' if domain == 'patients' else 'ConditionMedicale',
                 'description': ('Patient record from the medical ontology' if domain == 'patients'
@@ -51,6 +53,18 @@ def build_records(rows: list[dict[str, Any]], domain: str) -> list[dict[str, Any
                 'relations': [],
             }
         entity = records[identifier]
+        if domain == 'conditions':
+            incoming = entity.setdefault('incomingRelations', [])
+            source = binding_value(row, 'source')
+            incoming_predicate = binding_value(row, 'incomingPredicate')
+            source_domain = binding_value(row, 'sourceDomain')
+            if (source and source.startswith(NAMESPACE) and incoming_predicate
+                    and incoming_predicate.startswith(NAMESPACE)
+                    and source_domain in {'patients', 'contraindications'}):
+                pair = (local_name(incoming_predicate), local_name(source))
+                if pair not in seen_incoming[identifier]:
+                    incoming.append({'predicate': pair[0], 'source': pair[1], 'sourceDomain': source_domain})
+                    seen_incoming[identifier].add(pair)
         rdf_type = binding_value(row, 'type')
         if rdf_type and rdf_type.startswith(NAMESPACE):
             name = local_name(rdf_type)
@@ -93,6 +107,7 @@ def build_records(rows: list[dict[str, Any]], domain: str) -> list[dict[str, Any
             )
     else:
         for item in records.values():
+            item['incomingRelations'].sort(key=lambda link: (link['predicate'], link['source']))
             category = item['properties'].get('category', 'ConditionMedicale')
             item['description'] = category.replace('Etat', 'État ') + ' · ' + item['type']
 

@@ -9,7 +9,7 @@ def select_conditions(condition_id: str | None = None) -> str:
         if condition_id is not None else ""
     )
     return f"""{PREFIXES}
-SELECT DISTINCT ?entity ?type ?group ?predicate ?value WHERE {{
+SELECT DISTINCT ?entity ?type ?group ?predicate ?value ?source ?incomingPredicate ?sourceDomain WHERE {{
   {values}
   ?entity rdf:type ?type .
   ?type rdfs:subClassOf* med:ConditionMedicale .
@@ -20,6 +20,17 @@ SELECT DISTINCT ?entity ?type ?group ?predicate ?value WHERE {{
   OPTIONAL {{
     ?entity ?predicate ?value .
     FILTER(?predicate IN (med:severite))
+  }}
+  OPTIONAL {{
+    {{
+      ?source med:aPourCondition ?entity ; rdf:type/rdfs:subClassOf* med:Patient .
+      BIND(med:aPourCondition AS ?incomingPredicate)
+      BIND("patients" AS ?sourceDomain)
+    }} UNION {{
+      ?source med:concerneCondition ?entity ; rdf:type/rdfs:subClassOf* med:ContreIndication .
+      BIND(med:concerneCondition AS ?incomingPredicate)
+      BIND("contraindications" AS ?sourceDomain)
+    }}
   }}
 }}
 ORDER BY ?entity ?predicate ?value
