@@ -17,7 +17,7 @@ export function isClinicalDomain(domain?: string): domain is ClinicalDomain {
 }
 
 /** Shared domain-specific transport; other teammates' pages remain unchanged. */
-function useClinicalResource<T>(key: string, path: string | null) {
+export function useClinicalResource<T>(key: string, path: string | null) {
   const [result, setResult] = useState<LoadResult<T>>({ key: '', status: 'idle', data: null });
   const [attempt, setAttempt] = useState(0);
   const retry = () => setAttempt(current => current + 1);

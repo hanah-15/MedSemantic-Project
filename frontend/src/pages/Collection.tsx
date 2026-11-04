@@ -6,8 +6,14 @@ import { DomainIcon } from '../components/Icons';
 import { isClinicalDomain, useClinicalCollection } from '../hooks/useClinicalRecords';
 import ClinicalSource from '../components/ClinicalSource';
 import EntityCard from '../components/EntityCard';
+import PharmacologyCollection from './PharmacologyCollection';
 
 export default function Collection() {
+  const {slug} = useParams();
+  return slug === 'medications' ? <PharmacologyCollection/> : <OntologyCollection/>;
+}
+
+function OntologyCollection() {
   const {slug} = useParams();
   const domain = domains.find(d => d.slug === slug);
   const [query,setQuery] = useState('');

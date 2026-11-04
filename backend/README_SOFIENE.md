@@ -61,3 +61,21 @@ Loading and successful empty results do not show preview records. A live 404 sta
 From `frontend`, run `npm test` for the clinical UI regression suite and `npm run build` for TypeScript and the production build. Tests cover loading, empty datasets, filters, missing records, service failures/retry, source labels, live incoming links, graph provenance, connection counts and stale requests.
 
 **Safety & scope:** All data is fictional coursework ontology data. Do not expose real patient data without appropriate authentication, access controls and privacy protections. This module only reads semantic records; it does not diagnose, prescribe or infer medication safety.
+
+## Hana pharmacology integration
+
+The merged application also registers Hana's medication CRUD and French NLP routes:
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET, POST | `/api/medicaments/` | List or create medications |
+| GET | `/api/medicaments/details/{uri}` | Medication profile and molecule composition |
+| GET | `/api/medicaments/{nom_medicament}` | Active ingredients and excipients by commercial name |
+| PUT, DELETE | `/api/medicaments/{uri}` | Update or delete a medication |
+| GET | `/api/recherche/?q=...` | Answer French composition, dosage and dosage-form questions |
+
+All modules use the same `FUSEKI_URL` dataset. Pharmacology also accepts explicit `FUSEKI_QUERY_URL` and `FUSEKI_UPDATE_URL` overrides. Local Vite CORS supports GET, POST, PUT and DELETE.
+
+Install the merged `requirements.txt` into the existing `.venv` if these dependencies are missing; it includes spaCy and a pinned French language-model wheel. The medication collection preserves Hana's create, edit and delete forms. Medication profiles show live molecule composition and link back to patients with explicit `prend` relationships. The shared search includes live clinical and medication records alongside Hana's NLP answers.
+
+The integrated regression suites contain 36 backend tests and 20 frontend tests. Medication write tests evaluate SPARQL updates on an isolated RDFLib graph and never alter the running Fuseki dataset. The live integration verification script remains read-only.

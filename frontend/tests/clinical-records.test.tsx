@@ -57,7 +57,7 @@ describe('clinical record sources and states', ()=>{
     const fetch = vi.fn().mockImplementationOnce(()=>response({},503)).mockImplementation(()=>response(patient));
     vi.stubGlobal('fetch',fetch);
     show('/entity/Patient_Karim?domain=patients');
-    await screen.findByText('Showing sample records. Current records are unavailable.');
+    await screen.findAllByText('Showing sample records. Current records are unavailable.');
     fireEvent.click(screen.getByRole('button',{name:'Try again'}));
     await screen.findByRole('heading',{name:'Patient Karim live.'});
     expect(screen.queryByText('Illustrative patient profile')).toBeNull();
@@ -97,7 +97,7 @@ describe('clinical record sources and states', ()=>{
     vi.stubGlobal('fetch',vi.fn((url: string)=>url.endsWith('/api/patients') ? response([patient]) : response({},503)));
     show('/search');
     await screen.findByText('Patient Karim live');
-    await screen.findByText('Showing sample records. Current records are unavailable.');
+    await screen.findAllByText('Showing sample records. Current records are unavailable.');
     expect(screen.queryByText('LIVE ONTOLOGY')).toBeNull();
     expect(screen.getAllByText('Sample record').length).toBeGreaterThan(0);
   });
