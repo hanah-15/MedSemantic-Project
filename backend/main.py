@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routes import medicaments
+
 app = FastAPI(title="MedSemantic API", version="1.0.0")
 
 app.add_middleware(
@@ -10,6 +12,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Enregistrement de tes routes (Hana)
+app.include_router(medicaments.router)
 
 @app.get("/")
 def read_root():
