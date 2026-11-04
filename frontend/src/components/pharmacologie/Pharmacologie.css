@@ -1,0 +1,286 @@
+/* Pharmacologie.css - Styles isolés pour le module Pharmacologie */
+.pharmaco-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.pharmaco-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.pharmaco-header h2 {
+  color: #1a365d;
+  margin: 0 0 6px 0;
+  font-size: 1.9rem;
+}
+
+.pharmaco-header p {
+  color: #718096;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Alertes / Notifications */
+.pharmaco-alert {
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  animation: pharmacoFadeIn 0.3s ease-in-out;
+}
+
+.pharmaco-alert-success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.pharmaco-alert-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.pharmaco-alert-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  color: inherit;
+}
+
+/* Boutons */
+.pharmaco-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pharmaco-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.pharmaco-btn-primary {
+  background-color: #2b6cb0;
+  color: white;
+}
+
+.pharmaco-btn-success {
+  background-color: #2f855a;
+  color: white;
+}
+
+.pharmaco-btn-danger {
+  background-color: #e53e3e;
+  color: white;
+}
+
+.pharmaco-btn-secondary {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.pharmaco-btn-sm {
+  padding: 5px 10px;
+  font-size: 0.85rem;
+}
+
+/* Cards & Layout */
+.pharmaco-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  margin-bottom: 20px;
+}
+
+.pharmaco-card-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2d3748;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1.2rem;
+}
+
+.pharmaco-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 25px;
+}
+
+@media (max-width: 850px) {
+  .pharmaco-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Formulaires */
+.pharmaco-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.pharmaco-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.pharmaco-form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 5px;
+}
+
+.pharmaco-form-control {
+  padding: 9px 12px;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.pharmaco-form-control:focus {
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+.pharmaco-molecule-box {
+  background: #f7fafc;
+  border: 1px dashed #cbd5e0;
+  border-radius: 8px;
+  padding: 15px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+}
+
+/* Liste des Médicaments */
+.pharmaco-med-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pharmaco-med-item {
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pharmaco-med-item:hover {
+  border-color: #63b3ed;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pharmaco-med-item.active {
+  border-color: #3182ce;
+  background-color: #ebf8ff;
+}
+
+.pharmaco-med-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.05rem;
+  color: #2b6cb0;
+}
+
+.pharmaco-med-meta {
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.pharmaco-med-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Badges */
+.pharmaco-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.pharmaco-badge-actif {
+  background-color: #c6f6d5;
+  color: #22543d;
+}
+
+.pharmaco-badge-excipient {
+  background-color: #feebc8;
+  color: #7b341e;
+}
+
+/* Molécules */
+.pharmaco-mol-card {
+  background: #f7fafc;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  border-left: 4px solid #3182ce;
+}
+
+.pharmaco-empty {
+  text-align: center;
+  padding: 35px 20px;
+  color: #a0aec0;
+  font-style: italic;
+}
+
+/* Modal */
+.pharmaco-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: pharmacoFadeIn 0.2s ease-in-out;
+}
+
+.pharmaco-modal-content {
+  background: white;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 480px;
+  padding: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes pharmacoFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

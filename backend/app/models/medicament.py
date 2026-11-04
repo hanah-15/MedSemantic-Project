@@ -12,3 +12,15 @@ class Medicament(BaseModel):
     dosage: str
     forme_galenique: str
     molecules: Optional[List[Molecule]] = []
+
+class MedicamentCreate(BaseModel):
+    uri: Optional[str] = None  # Optionnel: s'il n'est pas fourni, il est dérivé du nom_commercial
+    nom_commercial: str
+    dosage: str
+    forme_galenique: str
+    molecules: Optional[List[Molecule]] = []
+
+class MedicamentUpdate(BaseModel):
+    nom_commercial: Optional[str] = None
+    dosage: Optional[str] = None
+    forme_galenique: Optional[str] = None
