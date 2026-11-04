@@ -1,11 +1,104 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpenText, GitBranch, Info, Layers3, Link2, Network } from 'lucide-react';
-import { entities, getEntity, getDomain } from '../data/ontology';
+import { entities, getEntity, getDomain, type Entity } from '../data/ontology';
+import { apiGet } from '../lib/api';
 import { DomainIcon } from '../components/Icons';
+
+type EtudeDetailApi = {
+  id: string;
+  iri: string;
+  type_etude?: string | null;
+  medicament_id?: string | null;
+  maladie_id?: string | null;
+  phase?: number | null;
+  annee?: number | null;
+  participants?: number | null;
+  comparative?: boolean | null;
+  resultats?: {
+    id: string;
+    iri: string;
+    type_resultat?: string | null;
+    valeur?: number | null;
+    unite?: string | null;
+  }[];
+};
+
+type ResultatDetailApi = {
+  id: string;
+  iri: string;
+  type_resultat?: string | null;
+  valeur?: number | null;
+  unite?: string | null;
+  etude_id?: string | null;
+  type_etude?: string | null;
+  medicament_id?: string | null;
+};
 
 export default function Detail() {
   const {id} = useParams();
-  const entity = getEntity(id ?? '');
+  const staticEntity = getEntity(id ?? '');
+  const [liveEntity, setLiveEntity] = useState<Entity | null>(null);
+
+  useEffect(() => {
+    setLiveEntity(null);
+    if (!id) return;
+    const isStudy = staticEntity?.domain === 'studies' || id.startsWith('Essai_') || id.startsWith('Etude_');
+    const isResult = staticEntity?.domain === 'results' || id.startsWith('Res_');
+    if (!isStudy && !isResult) return;
+
+    const controller = new AbortController();
+    if (isStudy) {
+      apiGet<EtudeDetailApi>(`/etudes/${encodeURIComponent(id)}`, controller.signal)
+        .then(d => {
+          const props: Record<string, string> = { IRI: d.iri };
+          if (d.phase != null) props.phaseEssai = String(d.phase);
+          if (d.participants != null) props.nombreParticipants = String(d.participants);
+          if (d.annee != null) props.anneePublication = String(d.annee);
+          if (d.comparative != null) props.estComparative = String(d.comparative);
+          const rels: {predicate: string; target: string}[] = [];
+          if (d.medicament_id) rels.push({predicate: 'testeMedicament', target: d.medicament_id});
+          if (d.maladie_id) rels.push({predicate: 'porteSurMaladie', target: d.maladie_id});
+          for (const r of d.resultats ?? []) {
+            rels.push({predicate: 'aPourResultat', target: r.id});
+          }
+          setLiveEntity({
+            id: d.id,
+            name: d.id.replaceAll('_', ' '),
+            domain: 'studies',
+            type: d.type_etude ?? 'EtudeClinique',
+            description: `${d.type_etude ?? 'Étude clinique'} (${d.annee ?? 'N/A'}) — ${d.participants ?? 0} participants`,
+            properties: props,
+            relations: rels,
+          });
+        })
+        .catch(() => setLiveEntity(null));
+    } else if (isResult) {
+      apiGet<ResultatDetailApi>(`/resultats/${encodeURIComponent(id)}`, controller.signal)
+        .then(r => {
+          const props: Record<string, string> = { IRI: r.iri };
+          if (r.valeur != null) props.valeurMesuree = String(r.valeur);
+          if (r.unite) props.uniteMesure = r.unite;
+          if (r.type_etude) props.typeEtudeAssociee = r.type_etude;
+          const rels: {predicate: string; target: string}[] = [];
+          if (r.etude_id) rels.push({predicate: 'aPourResultat (étude)', target: r.etude_id});
+          if (r.medicament_id) rels.push({predicate: 'testeMedicament', target: r.medicament_id});
+          setLiveEntity({
+            id: r.id,
+            name: r.id.replaceAll('_', ' '),
+            domain: 'results',
+            type: r.type_resultat ?? 'ResultatClinique',
+            description: r.valeur != null && r.unite ? `Résultat mesuré : ${r.valeur} ${r.unite}` : 'Résultat clinique',
+            properties: props,
+            relations: rels,
+          });
+        })
+        .catch(() => setLiveEntity(null));
+    }
+    return () => controller.abort();
+  }, [id, staticEntity?.domain]);
+
+  const entity = liveEntity ?? staticEntity;
   if (!entity) return <div className="empty-state"><h2>We couldn't find that concept.</h2><Link className="button-primary" to="/search">Explore the library <ArrowRight size={17}/></Link></div>;
   const domain = getDomain(entity.domain)!;
   const incoming = entities.flatMap(other => (other.relations ?? []).filter(rel => rel.target === entity.id).map(rel => ({...rel,source:other})));
