@@ -28,6 +28,18 @@ export interface MedicamentUpdate {
   forme_galenique?: string;
 }
 
+export interface NlpSearchResponse {
+  query: string;
+  intention: 'composition' | 'dosage' | 'forme_galenique' | 'inconnu';
+  medicament: string | null;
+  reponse: string;
+  data?: Array<{
+    nom: string;
+    type: string;
+    formule?: string | null;
+  }>;
+}
+
 export const medicamentApi = {
   // 1. READ: Liste de tous les médicaments
   async getAll(): Promise<Medicament[]> {
@@ -82,4 +94,11 @@ export const medicamentApi = {
     }
     return res.json();
   },
+
+  // 6. RECHERCHE NLP INTELLIGENTE
+  async askNlp(question: string): Promise<NlpSearchResponse> {
+    const res = await fetch(`${BASE_URL}/api/recherche/?q=${encodeURIComponent(question)}`);
+    if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+    return res.json();
+  }
 };
