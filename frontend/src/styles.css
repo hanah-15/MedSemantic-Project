@@ -383,11 +383,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, .graph-node:focus-vi
 .connection-option strong { font-size: 14.5px; }
 .preview-focus p { font-size: 13px; }
 
-/* Clinical API data-source indicator: short, unobtrusive, and readable. */
+/* Record loading and availability feedback. */
 .source-status { display: inline-flex; align-items: center; align-self: flex-start; gap: 9px; padding: 9px 13px; background: #edf5f7; border: 1px solid #d7e8ed; border-radius: 10px; color: #507585; font-size: 13px; font-weight: 600; }
 .source-status::before { content: ''; display: block; width: 8px; height: 8px; border-radius: 50%; background: #a0b0b8; }
-.source-connected { background: #e5f6ef; color: #17755f; border-color: #bce8d7; }
-.source-connected::before { background: #1aa481; }
 .source-loading::before { background: #d79b3d; }
 .source-status { flex-wrap: wrap; }
 .source-status button { border: 0; border-radius: 6px; padding: 5px 9px; color: #176c70; background: #fff; font: inherit; cursor: pointer; }
@@ -397,9 +395,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, .graph-node:focus-vi
 .clinical-filters select { max-width: 100%; min-height: 42px; padding: 9px 32px 9px 12px; background: white; color: #244e5d; border: 1px solid #cbdfe4; border-radius: 9px; font: inherit; }
 .clinical-filters select:focus-visible,.source-status button:focus-visible { outline: 3px solid #69c9bc; outline-offset: 3px; }
 .search-sources { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; color: #5a7784; font-size: 14px; }
-.search-sources small { flex-basis: 100%; font-size: 13px; }
-.record-source { display: block; font-size: 11px; letter-spacing: 1px; color: #56848b; font-weight: 700; margin-bottom: 8px; }
-.entity-grid > div > .entity-card { height: calc(100% - 24px); }
+.record-source { display: block; font-size: 11px; letter-spacing: 1px; color: #56848b; font-weight: 700; margin-bottom: 0; }
+.search-result { display: flex; flex-direction: column; gap: 8px; }
+.search-result .entity-card { flex: 1; }
 .relationship-source { display: block; font-size: 12px; color: #698794; font-weight: 400; margin-top: 4px; }
 .condition-path { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: #44717c; background: #edf7f5; border: 1px solid #cce8df; padding: 16px 20px; border-radius: 12px; font-size: 14px; }
 .clinical-graph header h2 { margin: 0; font-size: 21px; }
@@ -412,4 +410,3 @@ button:focus-visible, a:focus-visible, input:focus-visible, .graph-node:focus-vi
 .record-edge-links { display: grid; gap: 12px; }
 .record-edge-links > div { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 14px; color: #617e8b; }
 .record-edge-links a { display: inline-flex; align-items: center; gap: 8px; overflow-wrap: anywhere; color: #087f8c; }
-.graph-source-note { margin: 0; font-size: 13px; line-height: 1.7; color: #6e8996; }

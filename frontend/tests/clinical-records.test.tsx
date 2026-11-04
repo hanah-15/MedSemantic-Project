@@ -28,9 +28,9 @@ describe('clinical record sources and states', ()=>{
     vi.stubGlobal('fetch',vi.fn(()=>new Promise<Response>(done=>{resolve=done;})));
     show('/catalog/patients');
     expect(screen.queryByText('Patient Karim')).toBeNull();
-    expect(screen.getByRole('heading',{name:'Loading ontology records…'})).toBeTruthy();
+    expect(screen.getByRole('heading',{name:'Loading records…'})).toBeTruthy();
     resolve(new Response('[]'));
-    await screen.findByText('Live ontology · Fuseki → FastAPI');
+    await screen.findByRole('heading',{name:'No records found'});
     expect(screen.getByRole('heading',{name:'No records found'})).toBeTruthy();
     expect(screen.queryByText('Patient Karim')).toBeNull();
   });
@@ -39,6 +39,7 @@ describe('clinical record sources and states', ()=>{
     vi.stubGlobal('fetch',vi.fn(()=>response([patient,{...patient,id:'Patient_Child',name:'Child profile',properties:{age:'8',ageCategory:'Enfant'}}])));
     show('/catalog/patients');
     await screen.findByText('Patient Karim live');
+    expect(screen.queryByText(/Fuseki|FastAPI|LIVE ONTOLOGY/)).toBeNull();
     fireEvent.change(screen.getByRole('combobox',{name:'Age category'}),{target:{value:'Enfant'}});
     expect(screen.queryByText('Patient Karim live')).toBeNull();
     expect(screen.getByText('Child profile')).toBeTruthy();
@@ -47,7 +48,7 @@ describe('clinical record sources and states', ()=>{
   it('never replaces a live 404 with a matching preview profile', async()=>{
     vi.stubGlobal('fetch',vi.fn(()=>response({detail:'Patient not found'},404)));
     show('/entity/Patient_Karim?domain=patients');
-    await screen.findByText('Record not found in the live ontology');
+    await screen.findByText('Record not found.');
     expect(screen.queryByRole('heading',{name:'Patient Karim.'})).toBeNull();
     expect(screen.queryByText('Illustrative patient profile')).toBeNull();
   });
@@ -56,8 +57,8 @@ describe('clinical record sources and states', ()=>{
     const fetch = vi.fn().mockImplementationOnce(()=>response({},503)).mockImplementation(()=>response(patient));
     vi.stubGlobal('fetch',fetch);
     show('/entity/Patient_Karim?domain=patients');
-    await screen.findByText('Preview records · FastAPI or Fuseki is unavailable');
-    fireEvent.click(screen.getByRole('button',{name:'Retry connection'}));
+    await screen.findByText('Showing sample records. Current records are unavailable.');
+    fireEvent.click(screen.getByRole('button',{name:'Try again'}));
     await screen.findByRole('heading',{name:'Patient Karim live.'});
     expect(screen.queryByText('Illustrative patient profile')).toBeNull();
     expect(fetch).toHaveBeenCalledTimes(2);
@@ -66,7 +67,7 @@ describe('clinical record sources and states', ()=>{
   it('shows API errors without substituting a preview profile', async()=>{
     vi.stubGlobal('fetch',vi.fn(()=>response({},500)));
     show('/entity/Patient_Karim?domain=patients');
-    await screen.findByText('The API could not load this record');
+    await screen.findByText('Unable to load records. Please try again.');
     expect(screen.queryByRole('heading',{name:'Patient Karim.'})).toBeNull();
   });
 
@@ -96,15 +97,15 @@ describe('clinical record sources and states', ()=>{
     vi.stubGlobal('fetch',vi.fn((url: string)=>url.endsWith('/api/patients') ? response([patient]) : response({},503)));
     show('/search');
     await screen.findByText('Patient Karim live');
-    await screen.findByText('Preview records · FastAPI or Fuseki is unavailable');
-    expect(screen.getAllByText('LIVE ONTOLOGY')).toHaveLength(1);
-    expect(screen.getAllByText('PREVIEW DATA').length).toBeGreaterThan(0);
+    await screen.findByText('Showing sample records. Current records are unavailable.');
+    expect(screen.queryByText('LIVE ONTOLOGY')).toBeNull();
+    expect(screen.getAllByText('Sample record').length).toBeGreaterThan(0);
   });
 
   it('draws only API graph edges and never substitutes preview edges', async()=>{
     vi.stubGlobal('fetch',vi.fn(()=>response([condition])));
     show('/graph?domain=conditions&id=LiveCondition');
-    await screen.findByRole('img',{name:'Explicit relationships for Live condition'});
+    await screen.findByRole('img',{name:'Relationships for Live condition'});
     expect(screen.getByRole('link',{name:'Patient_New'}).getAttribute('href')).toBe('/entity/Patient_New?domain=patients');
     expect(screen.queryByText('concerneCondition')).toBeNull();
   });

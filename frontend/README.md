@@ -38,7 +38,7 @@ The shared shell, typography, search, graph explorer, and reusable entity cards 
 
 Patient and ConditionMedicale collections, profiles, search and the record graph fetch ontology data through FastAPI at `http://127.0.0.1:8000` by default. Set `VITE_API_BASE_URL` in an optional local `.env` to override it. Follow `../backend/README_SOFIENE.md` to start the backend and verify its real Fuseki connection. Browser requests go to FastAPI, never directly to Fuseki.
 
-Other collections still use educational preview records. Clinical pages offer visibly labeled preview records if the API or Fuseki is unavailable; loading, live 404 responses and successful empty collections do not substitute preview records. Search labels record sources, and profile relationship links identify preview target/source profiles. The live graph uses explicit triples only; the separate class map describes the specification. Age categories are calculated from age, without claiming OWL reasoning. Do not use these records for clinical decisions.
+Other collections still use educational preview records. Clinical pages offer visibly labeled preview records if the API or Fuseki is unavailable; loading, live 404 responses and successful empty collections do not substitute preview records. Sample records and related sample profiles are labeled. Successful loads do not display connection badges or developer notes. The live graph uses explicit triples only; the separate class map describes the specification. Age categories are calculated from age, without claiming OWL reasoning. Do not use these records for clinical decisions.
 
 `npm test` runs the clinical UI regression suite with Vitest and Testing Library.
 
