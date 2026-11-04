@@ -29,6 +29,7 @@ Only if `.venv` does not exist, create it with `py -3.12 -m venv .venv` and inst
 | DELETE | `/api/patients/{id}`, `/api/conditions/{id}` | Delete the individual and links to it |
 | GET | `/api/patients/options` | Actual diseases, conditions, symptoms and medications available for linking |
 | GET | `/api/conditions/types` | Condition classes from the asserted ontology hierarchy |
+| GET | `/api/patients/filter-options`, `/api/conditions/filter-options` | Distinct recorded sex/severity values for filter dropdowns |
 
 Response records match React's existing `Entity` type: `id`, `name`, `domain`, `type`, `description`, `properties`, `relations`. The `properties.ageCategory` label is computed in Python from the specification's age bands (under 18, 18–64, 65+) — it does **not** claim that Fuseki has performed OWL reasoning. No `aPourCondition` links exist for the sample patients in the supplied ontology; an empty array is expected and is not a bug.
 
@@ -46,7 +47,7 @@ python scripts\verify_live.py --ontology "C:\path\to\MedSemantic.owl"
 
 The script reads the Fuseki default graph and compares it with the supplied ontology, accounting for RDF 1.1 string-literal equivalence and blank-node identifiers. It then compares API collections and every detail response with direct SPARQL results from that file, verifies patient condition links, checks 404/422 responses, and checks Swagger and Vite CORS. Optional `--fuseki` and `--api` flags select other local servers. It never creates a dataset or uploads/modifies triples. A mismatch is reported for inspection.
 
-Verified on 2026-11-04 with Java 17 and Fuseki 5.0.0: 532 triples, 3 patients, 4 conditions, all detail routes, explicit links, identifier errors and CORS. A separate real failed connection to an unavailable local Fuseki endpoint returned HTTP 503. The latest clinical extension was verified on 2026-11-05: 75 backend tests passed against both the fixture and the official ontology. The frontend suite contains 28 passing tests.
+Verified on 2026-11-04 with Java 17 and Fuseki 5.0.0: 532 triples, 3 patients, 4 conditions, all detail routes, explicit links, identifier errors and CORS. A separate real failed connection to an unavailable local Fuseki endpoint returned HTTP 503. The latest clinical extension was verified on 2026-11-05: 77 backend tests passed against both the fixture and the official ontology. The frontend suite contains 30 passing tests.
 
 ## Frontend integration
 
@@ -83,7 +84,7 @@ All modules use the same `FUSEKI_URL` dataset. Pharmacology also accepts explici
 
 Install the merged `requirements.txt` into the existing `.venv` if these dependencies are missing; it includes spaCy and a pinned French language-model wheel. The medication collection preserves Hana's create, edit and delete forms. Medication profiles show live molecule composition and link back to patients with explicit `prend` relationships. The shared search includes live clinical and medication records alongside Hana's NLP answers.
 
-The integrated regression suites contain 75 backend tests and 28 frontend tests. Medication write tests evaluate SPARQL updates on an isolated RDFLib graph and never alter the running Fuseki dataset. The live integration verification script remains read-only.
+The integrated regression suites contain 77 backend tests and 30 frontend tests. Medication write tests evaluate SPARQL updates on an isolated RDFLib graph and never alter the running Fuseki dataset. The live integration verification script remains read-only.
 
 ## Clinical editing and SPARQL filters
 
@@ -91,7 +92,7 @@ Patient writes accept `age` (a non-negative integer), `sexe` and optional identi
 
 The collection pages provide add/edit/delete forms and actual ontology choices. Editing and deletion are disabled for fallback samples. Deleting an individual also removes incoming links; it does not delete related individuals or schema classes.
 
-Patient GET filters: `q`, `min_age`, `max_age`, `age_category`, `sexe`, `condition_id`. Condition GET filters: `q`, `category`, `condition_type`, `severity`. These become SPARQL FILTERs or graph patterns on Fuseki, rather than relying on browser filtering alone.
+Patient GET filters: `q`, `min_age`, `max_age`, `age_category`, `sexe`, `condition_id`. Condition GET filters: `q`, `category`, `condition_type`, `severity`. These become SPARQL FILTERs or graph patterns on Fuseki, rather than relying on browser filtering alone. Sex and severity use dropdowns populated independently of the current filters from recorded ontology values. Female/Male labels send F/M; severity matches the selected value exactly, ignoring case. All clears the corresponding filter.
 
 Clinical NLP shares Hana's local spaCy French pipeline (`fr_core_news_sm`). It uses lemmatization, a PhraseMatcher built from current patient/class identifiers, numeric comparison parsing, and bounded SPARQL templates. It supports patient medications, diseases, conditions and symptoms; patient age bands/ranges; and physiological/pathological or typed condition queries. New patient names are recognized from the current dataset. Unsupported or negative questions request clarification rather than interpreting missing data as medical absence. No hosted LLM API is used.
 

@@ -31,7 +31,7 @@ def select_patients(patient_id: str | None = None, *, q: str = '', min_age: int 
             raise ValueError('Invalid age category')
         filters.append(f'FILTER EXISTS {{ ?entity med:age ?ageBand . FILTER({bands[age_category]}) }}')
     if sexe:
-        filters.append(f'FILTER EXISTS {{ ?entity med:sexe ?sex . FILTER(STR(?sex) = {literal(sexe)}) }}')
+        filters.append(f'FILTER EXISTS {{ ?entity med:sexe ?sex . FILTER(LCASE(STR(?sex)) = {literal(sexe.lower())}) }}')
     if condition_id:
         filters.append(f'?entity med:aPourCondition med:{safe_individual_id(condition_id)} .')
     if condition_type:

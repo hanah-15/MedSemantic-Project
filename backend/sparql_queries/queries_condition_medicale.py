@@ -17,7 +17,7 @@ def select_conditions(condition_id: str | None = None, *, q: str = '', category:
     if condition_type:
         filters.append(f'?type rdfs:subClassOf* med:{safe_individual_id(condition_type)} .')
     if severity:
-        filters.append(f'FILTER EXISTS {{ ?entity med:severite ?severity . FILTER(CONTAINS(LCASE(STR(?severity)), {literal(severity.lower())})) }}')
+        filters.append(f'FILTER EXISTS {{ ?entity med:severite ?severity . FILTER(LCASE(STR(?severity)) = {literal(severity.lower())}) }}')
     if q.strip():
         term = literal(q.strip().lower())
         filters.append(f'''FILTER(CONTAINS(LCASE(REPLACE(REPLACE(STR(?entity), "_", " "), "([a-z])([A-Z])", "$1 $2")), {term}) ||

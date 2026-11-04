@@ -30,6 +30,11 @@ def get_condition_types():
     return clinical_editor.condition_types()
 
 
+@router.get('/filter-options')
+def get_condition_filter_options():
+    return clinical_editor.filter_options('conditions')
+
+
 @router.post('', status_code=201)
 def create_condition(payload: ConditionCreate):
     clinical_editor.write_record(payload.id, payload, 'conditions', create=True)

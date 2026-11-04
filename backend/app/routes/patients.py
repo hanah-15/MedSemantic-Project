@@ -33,6 +33,11 @@ def get_patient_options():
     return clinical_editor.patient_options()
 
 
+@router.get('/filter-options')
+def get_patient_filter_options():
+    return clinical_editor.filter_options('patients')
+
+
 @router.post('', status_code=201)
 def create_patient(payload: PatientCreate):
     clinical_editor.write_record(payload.id, payload, 'patients', create=True)

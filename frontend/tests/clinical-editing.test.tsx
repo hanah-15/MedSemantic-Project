@@ -134,3 +134,51 @@ it('shows clinical NLP records as navigable results',async()=>{
   await screen.findByText('1 patient trouvé.');
   expect(screen.getByRole('link',{name:/Patient Test/}).getAttribute('href')).toBe('/entity/Patient_Test?domain=patients');
 });
+
+it('filters sex using Female/Male dropdown choices and resets to All',async()=>{
+  const records=[
+    {...patient,id:'Patient_Female1',name:'Female one'},
+    {...patient,id:'Patient_Female2',name:'Female two'},
+    {...patient,id:'Patient_Male',name:'Male record',properties:{...patient.properties,sexe:'M'}},
+  ];
+  const fetch=vi.fn((url:string)=>{
+    if (url.endsWith('/filter-options')) return response({sexes:['F','M']});
+    const sex=new URL(url).searchParams.get('sexe');
+    return response(records.filter(record=>!sex || record.properties.sexe === sex));
+  });
+  vi.stubGlobal('fetch',fetch);
+  show('/catalog/patients');
+  await screen.findByRole('heading',{name:'Male record'});
+  await screen.findByRole('option',{name:'Female (F)'});
+  const select=screen.getByRole('combobox',{name:'Sex'});
+  expect(screen.queryByRole('textbox',{name:'Sex'})).toBeNull();
+  fireEvent.change(select,{target:{value:'F'}});
+  await screen.findByRole('heading',{name:'Female two'});
+  expect(screen.queryByRole('heading',{name:'Male record'})).toBeNull();
+  fireEvent.change(select,{target:{value:'M'}});
+  await screen.findByRole('heading',{name:'Male record'});
+  expect(screen.queryByRole('heading',{name:'Female one'})).toBeNull();
+  fireEvent.change(select,{target:{value:''}});
+  await screen.findByRole('heading',{name:'Female two'});
+  expect(screen.getByRole('heading',{name:'Male record'})).toBeTruthy();
+});
+
+it('uses recorded severity choices and keeps all choices available after filtering',async()=>{
+  const records=[condition,{...condition,id:'Condition_Severe',name:'Severe condition',properties:{...condition.properties,severite:'sévère'}}];
+  vi.stubGlobal('fetch',vi.fn((url:string)=>{
+    if (url.endsWith('/filter-options')) return response({severities:['modérée','sévère']});
+    const severity=new URL(url).searchParams.get('severity');
+    return response(records.filter(record=>!severity || record.properties.severite === severity));
+  }));
+  show('/catalog/conditions');
+  await screen.findByRole('heading',{name:'Severe condition'});
+  await screen.findByRole('option',{name:'sévère'});
+  const select=screen.getByRole('combobox',{name:'Severity'});
+  expect(screen.queryByRole('textbox',{name:'Severity'})).toBeNull();
+  fireEvent.change(select,{target:{value:'sévère'}});
+  await screen.findByRole('heading',{name:'Severe condition'});
+  expect(screen.queryByRole('heading',{name:'Condition Test'})).toBeNull();
+  expect(screen.getByRole('option',{name:'modérée'})).toBeTruthy();
+  fireEvent.change(select,{target:{value:''}});
+  await screen.findByRole('heading',{name:'Condition Test'});
+});

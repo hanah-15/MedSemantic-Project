@@ -178,3 +178,21 @@ def test_query_and_update_share_configured_dataset(monkeypatch):
     monkeypatch.delenv('FUSEKI_UPDATE_URL',raising=False)
     assert fuseki.endpoint_for('query') == 'http://localhost:3030/custom/query'
     assert fuseki.endpoint_for('update') == 'http://localhost:3030/custom/update'
+
+
+def test_filter_choices_and_sex_values_match_the_ontology(clinical_client):
+    assert clinical_client.get('/api/patients/filter-options').json() == {'sexes':['F','M']}
+    assert clinical_client.get('/api/conditions/filter-options').json() == {'severities':['3e trimestre','modérée','sévère']}
+    for value,expected in [('F',['Patient_Fatma','Patient_Sarah']),('M',['Patient_Karim']),('m',['Patient_Karim'])]:
+        response=clinical_client.get('/api/patients',params={'sexe':value})
+        assert response.status_code == 200
+        assert [record['id'] for record in response.json()] == expected
+
+
+def test_severity_dropdown_matches_the_selected_value_exactly(clinical_client,graph):
+    graph.add((med.OtherSeverity,RDF.type,med.InsuffisanceRenale))
+    graph.add((med.OtherSeverity,med.severite,Literal('très sévère')))
+    response=clinical_client.get('/api/conditions',params={'severity':'sévère'})
+    assert response.status_code == 200
+    assert [record['id'] for record in response.json()] == ['InsufRenaleSevere']
+    assert 'très sévère' in clinical_client.get('/api/conditions/filter-options').json()['severities']

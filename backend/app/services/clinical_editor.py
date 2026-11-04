@@ -52,6 +52,15 @@ def patient_options():
     return result
 
 
+def filter_options(domain: str):
+    root,predicate,key = ('Patient','sexe','sexes') if domain == 'patients' else ('ConditionMedicale','severite','severities')
+    rows = select(f'''SELECT DISTINCT ?value WHERE {{
+      ?entity rdf:type/rdfs:subClassOf* med:{root} ; med:{predicate} ?value .
+      FILTER(isLiteral(?value))
+    }}''')
+    return {key:sorted({row['value']['value'] for row in rows},key=str.casefold)}
+
+
 def write_record(identifier: str, payload, domain: str, *, create: bool):
     identifier = safe_individual_id(identifier)
     root = 'Patient' if domain == 'patients' else 'ConditionMedicale'

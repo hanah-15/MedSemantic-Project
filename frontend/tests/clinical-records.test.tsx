@@ -25,7 +25,7 @@ afterEach(()=>{cleanup();vi.unstubAllGlobals();});
 describe('clinical record sources and states', ()=>{
   it('does not display preview records while loading or for a successful empty dataset', async()=>{
     let resolve!: (value: Response) => void;
-    vi.stubGlobal('fetch',vi.fn(()=>new Promise<Response>(done=>{resolve=done;})));
+    vi.stubGlobal('fetch',vi.fn((url:string)=>url.endsWith('/filter-options') ? response({sexes:[]}) : new Promise<Response>(done=>{resolve=done;})));
     show('/catalog/patients');
     expect(screen.queryByText('Patient Karim')).toBeNull();
     expect(screen.getByRole('heading',{name:'Loading records…'})).toBeTruthy();
