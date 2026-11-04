@@ -3,15 +3,23 @@ import { useSearchParams } from 'react-router-dom';
 import { ArrowRight, Filter, Search, SearchX, SlidersHorizontal } from 'lucide-react';
 import { domains, entities } from '../data/ontology';
 import EntityCard from '../components/EntityCard';
+import { useClinicalCollection } from '../hooks/useClinicalRecords';
 
 export default function SearchPage() {
   const [params,setParams] = useSearchParams();
   const query = params.get('q') ?? '';
   const [filter,setFilter] = useState('all');
-  const matches = useMemo(() => entities.filter(entity => {
+  const { data: livePatients } = useClinicalCollection('patients');
+  const { data: liveConditions } = useClinicalCollection('conditions');
+  const searchable = useMemo(() => [
+    ...entities.filter(item => !(item.domain === 'patients' && livePatients) && !(item.domain === 'conditions' && liveConditions)),
+    ...(livePatients ?? []),
+    ...(liveConditions ?? []),
+  ], [livePatients, liveConditions]);
+  const matches = useMemo(() => searchable.filter(entity => {
     const text = [entity.id,entity.name,entity.type,entity.description,...Object.values(entity.properties ?? {})].join(' ').toLowerCase();
     return (filter === 'all' || entity.domain === filter) && text.includes(query.trim().toLowerCase());
-  }),[filter,query]);
+  }),[filter,query,searchable]);
 
   return <div className="page-flow inner-page">
     <div className="page-topline"><span className="eyebrow"><span className="eyebrow-indicator"/> DISCOVERY ENGINE</span><span className="topline-right">EXPLORE / SEARCH</span></div>

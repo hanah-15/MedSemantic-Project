@@ -1,0 +1,1 @@
+"""MedSemantic FastAPI application."""

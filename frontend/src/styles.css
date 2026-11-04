@@ -382,3 +382,10 @@ button:focus-visible, a:focus-visible, input:focus-visible, .graph-node:focus-vi
 .sidebar-spotlight p { font-size: 13px; }
 .connection-option strong { font-size: 14.5px; }
 .preview-focus p { font-size: 13px; }
+
+/* Clinical API data-source indicator: short, unobtrusive, and readable. */
+.source-status { display: inline-flex; align-items: center; align-self: flex-start; gap: 9px; padding: 9px 13px; background: #edf5f7; border: 1px solid #d7e8ed; border-radius: 10px; color: #507585; font-size: 13px; font-weight: 600; }
+.source-status::before { content: ''; display: block; width: 8px; height: 8px; border-radius: 50%; background: #a0b0b8; }
+.source-connected { background: #e5f6ef; color: #17755f; border-color: #bce8d7; }
+.source-connected::before { background: #1aa481; }
+.source-loading::before { background: #d79b3d; }

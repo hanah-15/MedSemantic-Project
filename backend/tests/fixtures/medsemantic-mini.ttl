@@ -1,0 +1,21 @@
+@prefix med: <http://www.semanticweb.org/medsemantic#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+med:Patient a rdfs:Class .
+med:ConditionMedicale a rdfs:Class .
+med:EtatPhysiologique rdfs:subClassOf med:ConditionMedicale .
+med:EtatPathologique rdfs:subClassOf med:ConditionMedicale .
+med:Grossesse rdfs:subClassOf med:EtatPhysiologique .
+med:InsuffisanceRenale rdfs:subClassOf med:EtatPathologique .
+med:InsuffisanceHepatique rdfs:subClassOf med:EtatPathologique .
+med:Allergie rdfs:subClassOf med:EtatPathologique .
+
+med:Patient_Sarah a med:Patient ; med:age 8 ; med:sexe "F" ; med:prend med:Doliprane ; med:ressentSymptome med:Fievre .
+med:Patient_Karim a med:Patient ; med:age 45 ; med:sexe "M" ; med:prend med:Glucophage ; med:aPourMaladie med:DiabeteType2 .
+med:Patient_Fatma a med:Patient ; med:age 72 ; med:sexe "F" ; med:prend med:Amlor ; med:aPourMaladie med:Hypertension .
+
+med:Grossesse_T3 a med:Grossesse ; med:severite "3e trimestre" .
+med:InsufRenaleSevere a med:InsuffisanceRenale ; med:severite "sévère" .
+med:InsufHepatiqueModeree a med:InsuffisanceHepatique ; med:severite "modérée" .
+med:AllergiePenicilline a med:Allergie .

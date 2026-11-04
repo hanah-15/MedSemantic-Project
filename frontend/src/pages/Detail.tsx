@@ -1,11 +1,17 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, ArrowUpRight, BookOpenText, GitBranch, Info, Layers3, Link2, Network } from 'lucide-react';
 import { entities, getEntity, getDomain } from '../data/ontology';
 import { DomainIcon } from '../components/Icons';
+import { useClinicalEntity } from '../hooks/useClinicalRecords';
 
 export default function Detail() {
   const {id} = useParams();
-  const entity = getEntity(id ?? '');
+  const [searchParams] = useSearchParams();
+  const previewEntity = getEntity(id ?? '');
+  const clinicalDomain = searchParams.get('domain') ?? previewEntity?.domain ?? (id?.startsWith('Patient_') ? 'patients' : undefined);
+  const { data: liveEntity, status } = useClinicalEntity(clinicalDomain, id);
+  const entity = liveEntity ?? previewEntity;
+  if (!entity && status === 'loading') return <div className="empty-state"><h2>Loading knowledge record...</h2></div>;
   if (!entity) return <div className="empty-state"><h2>We couldn't find that concept.</h2><Link className="button-primary" to="/search">Explore the library <ArrowRight size={17}/></Link></div>;
   const domain = getDomain(entity.domain)!;
   const incoming = entities.flatMap(other => (other.relations ?? []).filter(rel => rel.target === entity.id).map(rel => ({...rel,source:other})));
@@ -14,6 +20,7 @@ export default function Detail() {
   return <div className="page-flow inner-page">
     <div className="page-topline"><span className="eyebrow"><span className="eyebrow-indicator"/> KNOWLEDGE PROFILE</span><span className="topline-right">ONTOLOGY / {domain.owl.toUpperCase()}</span></div>
     <Link className="back-link" to={'/catalog/'+entity.domain}><ArrowLeft size={17}/> Back to {domain.title}</Link>
+    {(clinicalDomain === 'patients' || clinicalDomain === 'conditions') && <div className={'source-status source-' + status} role="status">{status === 'connected' ? 'Live ontology record' : status === 'loading' ? 'Loading live ontology record...' : 'Preview record · FastAPI or Fuseki is unavailable'}</div>}
     <section className="profile-heading"><div className={'collection-icon tone-'+domain.group.toLowerCase()}><DomainIcon name={domain.icon} size={35}/></div><div><span className="eyebrow">{domain.owl} / {entity.type}</span><h1>{entity.name.replaceAll('_',' ')}<span className="heading-dot">.</span></h1><p>{entity.description}</p></div><Link className="button-outline" to="/graph"><Network size={18}/> Knowledge graph <ArrowUpRight size={16}/></Link></section>
     <div className="section-intro profile-section-title"><div><span className="eyebrow">SEMANTIC CONTEXT</span><h2>Connected knowledge<span className="heading-dot">.</span></h2><p>Trace how this concept relates to the rest of the medical ontology.</p></div></div>
     <div className="detail-layout">

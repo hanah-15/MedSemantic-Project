@@ -5,7 +5,7 @@ import { DomainIcon } from './Icons';
 
 export default function EntityCard({ item }: { item: Entity }) {
   const domain = getDomain(item.domain)!;
-  return <Link className="entity-card" to={'/entity/' + encodeURIComponent(item.id)}>
+  return <Link className="entity-card" to={'/entity/' + encodeURIComponent(item.id) + '?domain=' + item.domain}>
     <div className="entity-card-head">
       <span className={'domain-icon tone-' + domain.group.toLowerCase()}><DomainIcon size={23} name={domain.icon}/></span>
       <span className="card-action"><ArrowUpRight size={19}/></span>
