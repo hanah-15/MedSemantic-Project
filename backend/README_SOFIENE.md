@@ -1,6 +1,6 @@
 # Patient & ConditionMedicale — Sofiene's backend
 
-This branch contains read-only SPARQL routes for the two assigned ontology classes. **They require Apache Jena Fuseki 5.0.0 and Java 17** on the developer's PC. Load the supplied `MedSemantic.owl` into a TDB2 dataset named `medsemantic` before calling the API.
+This branch implements SPARQL CRUD, filtering, relationship editing and French NLP for Patient and ConditionMedicale. **They require Apache Jena Fuseki 5.0.0 and Java 17** on the developer's PC. Load the official `ontology/MedSemantic.owl` from the repository root into a TDB2 dataset named `medsemantic` before calling the API.
 
 ## Start with an existing installation in Windows CMD
 
@@ -24,6 +24,11 @@ Only if `.venv` does not exist, create it with `py -3.12 -m venv .venv` and inst
 | GET | `/api/patients/{id}/conditions` | Only conditions actually linked via `aPourCondition` |
 | GET | `/api/conditions` | Medical conditions, including individuals typed as subclasses |
 | GET | `/api/conditions/{id}` | Medical condition by ontology identifier |
+| POST | `/api/patients`, `/api/conditions` | Create a clinical individual |
+| PUT | `/api/patients/{id}`, `/api/conditions/{id}` | Replace the editable clinical attributes and links |
+| DELETE | `/api/patients/{id}`, `/api/conditions/{id}` | Delete the individual and links to it |
+| GET | `/api/patients/options` | Actual diseases, conditions, symptoms and medications available for linking |
+| GET | `/api/conditions/types` | Condition classes from the asserted ontology hierarchy |
 
 Response records match React's existing `Entity` type: `id`, `name`, `domain`, `type`, `description`, `properties`, `relations`. The `properties.ageCategory` label is computed in Python from the specification's age bands (under 18, 18–64, 65+) — it does **not** claim that Fuseki has performed OWL reasoning. No `aPourCondition` links exist for the sample patients in the supplied ontology; an empty array is expected and is not a bug.
 
@@ -41,7 +46,7 @@ python scripts\verify_live.py --ontology "C:\path\to\MedSemantic.owl"
 
 The script reads the Fuseki default graph and compares it with the supplied ontology, accounting for RDF 1.1 string-literal equivalence and blank-node identifiers. It then compares API collections and every detail response with direct SPARQL results from that file, verifies patient condition links, checks 404/422 responses, and checks Swagger and Vite CORS. Optional `--fuseki` and `--api` flags select other local servers. It never creates a dataset or uploads/modifies triples. A mismatch is reported for inspection.
 
-Verified on 2026-11-04 with Java 17 and Fuseki 5.0.0: 532 triples, 3 patients, 4 conditions, all detail routes, explicit links, identifier errors and CORS. A separate real failed connection to an unavailable local Fuseki endpoint returned HTTP 503. Both the fixture and official-ontology test runs passed 22 tests.
+Verified on 2026-11-04 with Java 17 and Fuseki 5.0.0: 532 triples, 3 patients, 4 conditions, all detail routes, explicit links, identifier errors and CORS. A separate real failed connection to an unavailable local Fuseki endpoint returned HTTP 503. The latest clinical extension was verified on 2026-11-05: 75 backend tests passed against both the fixture and the official ontology. The frontend suite contains 28 passing tests.
 
 ## Frontend integration
 
@@ -60,7 +65,7 @@ Loading and successful empty results do not show preview records. A live 404 sta
 
 From `frontend`, run `npm test` for the clinical UI regression suite and `npm run build` for TypeScript and the production build. Tests cover loading, empty datasets, filters, missing records, service failures/retry, source labels, live incoming links, graph provenance, connection counts and stale requests.
 
-**Safety & scope:** All data is fictional coursework ontology data. Do not expose real patient data without appropriate authentication, access controls and privacy protections. This module only reads semantic records; it does not diagnose, prescribe or infer medication safety.
+**Safety & scope:** All data is fictional coursework ontology data. Do not expose real patient data without appropriate authentication, access controls and privacy protections. This module reads and edits educational ontology individuals; it does not diagnose, prescribe or infer medication safety.
 
 ## Hana pharmacology integration
 
@@ -78,4 +83,28 @@ All modules use the same `FUSEKI_URL` dataset. Pharmacology also accepts explici
 
 Install the merged `requirements.txt` into the existing `.venv` if these dependencies are missing; it includes spaCy and a pinned French language-model wheel. The medication collection preserves Hana's create, edit and delete forms. Medication profiles show live molecule composition and link back to patients with explicit `prend` relationships. The shared search includes live clinical and medication records alongside Hana's NLP answers.
 
-The integrated regression suites contain 36 backend tests and 20 frontend tests. Medication write tests evaluate SPARQL updates on an isolated RDFLib graph and never alter the running Fuseki dataset. The live integration verification script remains read-only.
+The integrated regression suites contain 75 backend tests and 28 frontend tests. Medication write tests evaluate SPARQL updates on an isolated RDFLib graph and never alter the running Fuseki dataset. The live integration verification script remains read-only.
+
+## Clinical editing and SPARQL filters
+
+Patient writes accept `age` (a non-negative integer), `sexe` and optional identifier lists for `aPourMaladie`, `aPourCondition`, `ressentSymptome` and `prend`. POST additionally requires `id`. PUT replaces the clinical fields and these links while preserving unrelated attributes. Linked individuals must belong to the expected ontology class. Condition writes accept an existing condition `type` and optional `severite`; POST also requires `id`. Clearing severity removes that assertion. Existing identifiers return 409, invalid values or wrong-class links return 422, missing records return 404, and unavailable storage returns 503.
+
+The collection pages provide add/edit/delete forms and actual ontology choices. Editing and deletion are disabled for fallback samples. Deleting an individual also removes incoming links; it does not delete related individuals or schema classes.
+
+Patient GET filters: `q`, `min_age`, `max_age`, `age_category`, `sexe`, `condition_id`. Condition GET filters: `q`, `category`, `condition_type`, `severity`. These become SPARQL FILTERs or graph patterns on Fuseki, rather than relying on browser filtering alone.
+
+Clinical NLP shares Hana's local spaCy French pipeline (`fr_core_news_sm`). It uses lemmatization, a PhraseMatcher built from current patient/class identifiers, numeric comparison parsing, and bounded SPARQL templates. It supports patient medications, diseases, conditions and symptoms; patient age bands/ranges; and physiological/pathological or typed condition queries. New patient names are recognized from the current dataset. Unsupported or negative questions request clarification rather than interpreting missing data as medical absence. No hosted LLM API is used.
+
+Examples: `Quels médicaments prend Karim ?`, `Quels symptômes ressent Sarah ?`, `Quels patients ont au moins 65 ans ?`, `Quelles conditions sont physiologiques ?`. The NLP response includes `records`, the executed `sparql`, analysis and named tools for the professor's API demonstration. Normal pages show records and plain user feedback without infrastructure badges.
+
+## Real Fuseki write verification
+
+With Fuseki running, from the repository root:
+
+```powershell
+.\backend\.venv\Scripts\python.exe backend/scripts/verify_clinical_crud.py
+```
+
+This creates a uniquely named temporary memory dataset, loads the bundled official ontology into it, verifies clinical CRUD, link maintenance, filters and NLP, then removes that dataset. It reads the team's `medsemantic` graph before and after and verifies it is unchanged. Fuseki administrative access on localhost is needed for this optional check. It does not launch a second backend server.
+
+A short presentation walkthrough is available in `docs/SOFIENE_DEMO.md` from the repository root.

@@ -1,5 +1,6 @@
 import re
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
+from app.services.clinical_nlp import answer_clinical_question
 from app.services.nlp_service import analyser_requete_nlp
 from app.services.sparql_service import execute_sparql_query
 
@@ -10,8 +11,11 @@ def echapper_sparql(valeur: str) -> str:
     return re.sub(r'([\\"\'])', r'\\\1', valeur)
 
 @router.get("/")
-def recherche_intelligente(q: str):
+def recherche_intelligente(q: str = Query(min_length=1, max_length=500)):
     """Point d'entrée pour les questions en langage naturel traitées par NLP et résolues via Fuseki."""
+    clinical = answer_clinical_question(q)
+    if clinical is not None:
+        return clinical
     analyse = analyser_requete_nlp(q)
     intention = analyse["intention"]
     medicament = analyse["medicament"]

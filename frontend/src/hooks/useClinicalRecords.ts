@@ -43,9 +43,11 @@ export function useClinicalResource<T>(key: string, path: string | null) {
   return { data: result.data, status: result.status, retry };
 }
 
-export function useClinicalCollection(domain?: DomainSlug | string) {
+export function useClinicalCollection(domain?: DomainSlug | string, filters:Record<string,string> = {}) {
   const enabled = isClinicalDomain(domain);
-  return useClinicalResource<Entity[]>(enabled ? domain : '', enabled ? servicePaths[domain] : null);
+  const query = new URLSearchParams(Object.entries(filters).filter(([,value])=>value.trim() !== '')).toString();
+  const path = enabled ? servicePaths[domain] + (query ? '?'+query : '') : null;
+  return useClinicalResource<Entity[]>(path ?? '', path);
 }
 
 export function useClinicalEntity(domain?: string, id?: string) {

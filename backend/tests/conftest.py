@@ -37,4 +37,5 @@ def client(graph: Graph, monkeypatch: pytest.MonkeyPatch) -> TestClient:
             bindings.append(binding)
         return bindings
     monkeypatch.setattr(fuseki, 'query_select', fake_query)
+    monkeypatch.setattr(fuseki, 'query_update', graph.update)
     return TestClient(app)

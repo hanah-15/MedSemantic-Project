@@ -11,6 +11,12 @@ import { useClinicalCollection } from '../hooks/useClinicalRecords';
 import ClinicalSource from '../components/ClinicalSource';
 import { useMedicationCollection } from '../hooks/useMedicationRecord';
 
+const clinicalIntentLabels:Record<string,string> = {
+  patients_filter:'Patients', conditions_filter:'Conditions', patient_prend:'Médicaments du patient',
+  patient_aPourMaladie:'Maladies du patient', patient_aPourCondition:'Conditions du patient',
+  patient_ressentSymptome:'Symptômes du patient', clarification:'Précision nécessaire',
+};
+
 export default function SearchPage() {
   const [params, setParams] = useSearchParams();
   const query = params.get('q') ?? '';
@@ -65,7 +71,7 @@ export default function SearchPage() {
     setNlpLoading(false);
     const trimmed = query.trim();
     const isQuestion = trimmed.includes('?') ||
-      /^(quel|quelle|quels|quelles|comment|combien|composition|dosage|forme|quoi)/i.test(trimmed) ||
+      /^(quel|quelle|quels|quelles|comment|combien|composition|dosage|forme|quoi|patients?|conditions?|enfants?|adultes?)/i.test(trimmed) ||
       trimmed.split(' ').length >= 3;
 
     if (isQuestion) {
@@ -136,7 +142,10 @@ export default function SearchPage() {
           {[
             "Quel est le dosage du Doliprane ?",
             "Quelle est la composition de l'Advil ?",
-            "Forme galénique du Glucophage"
+            "Forme galénique du Glucophage",
+            "Quels médicaments prend Karim ?",
+            "Quels patients ont plus de 65 ans ?",
+            "Quelles conditions sont physiologiques ?"
           ].map(suggestion => (
             <button
               key={suggestion}
@@ -212,7 +221,7 @@ export default function SearchPage() {
                   textTransform: 'uppercase'
                 }}
               >
-                Intention : {nlpResult.intention.replace('_', ' ')}
+                {clinicalIntentLabels[nlpResult.intention] ?? 'Intention : '+nlpResult.intention.replace('_', ' ')}
               </span>
             )}
           </div>
@@ -220,6 +229,7 @@ export default function SearchPage() {
           <p style={{ fontSize: '16px', color: '#134e4a', margin: '12px 0 6px', lineHeight: 1.5, fontWeight: 500 }}>
             {nlpResult.reponse}
           </p>
+          {nlpResult.records && nlpResult.records.length > 0 && <div className="entity-grid">{nlpResult.records.map(record=><EntityCard key={record.domain+record.id} item={record}/>)}</div>}
 
           {/* Molécules structurées extraites */}
           {nlpResult.data && nlpResult.data.length > 0 && (
@@ -250,6 +260,7 @@ export default function SearchPage() {
       )}
 
       {/* RÉSULTATS CLASSIQUES PAR CARTES */}
+      {((!nlpResult && !nlpLoading) || matches.length > 0) && <>
       <div className="section-intro result-intro">
         <div>
           <span className="eyebrow">KNOWLEDGE LIBRARY</span>
@@ -276,6 +287,7 @@ export default function SearchPage() {
           </button>
         </div>
       )}
+      </>}
     </div>
   );
 }

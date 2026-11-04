@@ -42,7 +42,7 @@ describe('clinical record sources and states', ()=>{
     expect(screen.queryByText(/Fuseki|FastAPI|LIVE ONTOLOGY/)).toBeNull();
     fireEvent.change(screen.getByRole('combobox',{name:'Age category'}),{target:{value:'Enfant'}});
     expect(screen.queryByText('Patient Karim live')).toBeNull();
-    expect(screen.getByText('Child profile')).toBeTruthy();
+    expect(await screen.findByText('Child profile')).toBeTruthy();
   });
 
   it('never replaces a live 404 with a matching preview profile', async()=>{

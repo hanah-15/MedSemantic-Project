@@ -30,9 +30,11 @@ export interface MedicamentUpdate {
 
 export interface NlpSearchResponse {
   query: string;
-  intention: 'composition' | 'dosage' | 'forme_galenique' | 'inconnu';
+  intention: string;
   medicament: string | null;
   reponse: string;
+  records?: import('../data/ontology').Entity[];
+  sparql?: string;
   data?: Array<{
     nom: string;
     type: string;

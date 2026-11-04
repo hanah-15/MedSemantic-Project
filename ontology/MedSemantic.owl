@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns="http://www.semanticweb.org/medsemantic#"
+     xml:base="http://www.semanticweb.org/medsemantic"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+
+    <owl:Ontology rdf:about="http://www.semanticweb.org/medsemantic">
+        <rdfs:label xml:lang="fr">MedSemantic</rdfs:label>
+    </owl:Ontology>
+
+    <!-- ===================== CLASSES RACINES ===================== -->
+    <owl:Class rdf:about="#Medicament"><rdfs:label xml:lang="fr">Médicament</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Molecule"><rdfs:label xml:lang="fr">Molécule</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Maladie"><rdfs:label xml:lang="fr">Maladie</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Symptome"><rdfs:label xml:lang="fr">Symptôme</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#EffetSecondaire"><rdfs:label xml:lang="fr">Effet secondaire</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#ContreIndication"><rdfs:label xml:lang="fr">Contre-indication</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Patient"><rdfs:label xml:lang="fr">Patient</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#ConditionMedicale"><rdfs:label xml:lang="fr">Condition médicale</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#EtudeClinique"><rdfs:label xml:lang="fr">Étude clinique</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#ResultatClinique"><rdfs:label xml:lang="fr">Résultat clinique</rdfs:label></owl:Class>
+
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="#Medicament"/>
+            <rdf:Description rdf:about="#Molecule"/>
+            <rdf:Description rdf:about="#Maladie"/>
+            <rdf:Description rdf:about="#Symptome"/>
+            <rdf:Description rdf:about="#EffetSecondaire"/>
+            <rdf:Description rdf:about="#ContreIndication"/>
+            <rdf:Description rdf:about="#Patient"/>
+            <rdf:Description rdf:about="#ConditionMedicale"/>
+            <rdf:Description rdf:about="#EtudeClinique"/>
+            <rdf:Description rdf:about="#ResultatClinique"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <!-- ===================== MEDICAMENT (non disjointes) ===================== -->
+    <owl:Class rdf:about="#Antalgique"><rdfs:subClassOf rdf:resource="#Medicament"/><rdfs:label xml:lang="fr">Antalgique</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#AntiInflammatoire"><rdfs:subClassOf rdf:resource="#Medicament"/><rdfs:label xml:lang="fr">Anti-inflammatoire</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Antibiotique"><rdfs:subClassOf rdf:resource="#Medicament"/><rdfs:label xml:lang="fr">Antibiotique</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Antihypertenseur"><rdfs:subClassOf rdf:resource="#Medicament"/><rdfs:label xml:lang="fr">Antihypertenseur</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Antidiabetique"><rdfs:subClassOf rdf:resource="#Medicament"/><rdfs:label xml:lang="fr">Antidiabétique</rdfs:label></owl:Class>
+
+    <!-- ===================== MOLECULE (non disjointes) ===================== -->
+    <owl:Class rdf:about="#PrincipeActif"><rdfs:subClassOf rdf:resource="#Molecule"/><rdfs:label xml:lang="fr">Principe actif</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Excipient"><rdfs:subClassOf rdf:resource="#Molecule"/><rdfs:label xml:lang="fr">Excipient</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Metabolite"><rdfs:subClassOf rdf:resource="#Molecule"/><rdfs:label xml:lang="fr">Métabolite</rdfs:label></owl:Class>
+
+    <!-- ===================== MALADIE (non disjointes) ===================== -->
+    <owl:Class rdf:about="#MaladieInfectieuse"><rdfs:subClassOf rdf:resource="#Maladie"/><rdfs:label xml:lang="fr">Maladie infectieuse</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#MaladieCardiovasculaire"><rdfs:subClassOf rdf:resource="#Maladie"/><rdfs:label xml:lang="fr">Maladie cardiovasculaire</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#MaladieRespiratoire"><rdfs:subClassOf rdf:resource="#Maladie"/><rdfs:label xml:lang="fr">Maladie respiratoire</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#MaladieMetabolique"><rdfs:subClassOf rdf:resource="#Maladie"/><rdfs:label xml:lang="fr">Maladie métabolique</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Diabete"><rdfs:subClassOf rdf:resource="#MaladieMetabolique"/><rdfs:label xml:lang="fr">Diabète</rdfs:label></owl:Class>
+
+    <owl:Class rdf:about="#MaladieChronique">
+        <rdfs:label xml:lang="fr">Maladie chronique</rdfs:label>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="#Maladie"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#estChronique"/>
+                        <owl:hasValue rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</owl:hasValue>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- ===================== SYMPTOME (disjointes) ===================== -->
+    <owl:Class rdf:about="#SymptomeGeneral"><rdfs:subClassOf rdf:resource="#Symptome"/><rdfs:label xml:lang="fr">Symptôme général</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#SymptomeRespiratoire"><rdfs:subClassOf rdf:resource="#Symptome"/><rdfs:label xml:lang="fr">Symptôme respiratoire</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#SymptomeDigestif"><rdfs:subClassOf rdf:resource="#Symptome"/><rdfs:label xml:lang="fr">Symptôme digestif</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#SymptomeNeurologique"><rdfs:subClassOf rdf:resource="#Symptome"/><rdfs:label xml:lang="fr">Symptôme neurologique</rdfs:label></owl:Class>
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="#SymptomeGeneral"/>
+            <rdf:Description rdf:about="#SymptomeRespiratoire"/>
+            <rdf:Description rdf:about="#SymptomeDigestif"/>
+            <rdf:Description rdf:about="#SymptomeNeurologique"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <!-- ===================== EFFET SECONDAIRE (disjointes) ===================== -->
+    <owl:Class rdf:about="#EffetDigestif"><rdfs:subClassOf rdf:resource="#EffetSecondaire"/><rdfs:label xml:lang="fr">Effet digestif</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#EffetNeurologique"><rdfs:subClassOf rdf:resource="#EffetSecondaire"/><rdfs:label xml:lang="fr">Effet neurologique</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#EffetCardiovasculaire"><rdfs:subClassOf rdf:resource="#EffetSecondaire"/><rdfs:label xml:lang="fr">Effet cardiovasculaire</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#EffetAllergique"><rdfs:subClassOf rdf:resource="#EffetSecondaire"/><rdfs:label xml:lang="fr">Effet allergique</rdfs:label></owl:Class>
+    <owl:AllDisjointClasses>
+        <owl:members rdf:parseType="Collection">
+            <rdf:Description rdf:about="#EffetDigestif"/>
+            <rdf:Description rdf:about="#EffetNeurologique"/>
+            <rdf:Description rdf:about="#EffetCardiovasculaire"/>
+            <rdf:Description rdf:about="#EffetAllergique"/>
+        </owl:members>
+    </owl:AllDisjointClasses>
+
+    <!-- ===================== CONTRE-INDICATION (disjointes) ===================== -->
+    <owl:Class rdf:about="#ContreIndicationAbsolue"><rdfs:subClassOf rdf:resource="#ContreIndication"/><rdfs:label xml:lang="fr">Contre-indication absolue</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#ContreIndicationRelative">
+        <rdfs:subClassOf rdf:resource="#ContreIndication"/>
+        <owl:disjointWith rdf:resource="#ContreIndicationAbsolue"/>
+        <rdfs:label xml:lang="fr">Contre-indication relative</rdfs:label>
+    </owl:Class>
+
+    <!-- ===================== PATIENT (classes définies) ===================== -->
+    <owl:Class rdf:about="#Enfant">
+        <rdfs:label xml:lang="fr">Enfant</rdfs:label>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="#Patient"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#age"/>
+                        <owl:someValuesFrom>
+                            <rdfs:Datatype>
+                                <owl:onDatatype rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+                                <owl:withRestrictions rdf:parseType="Collection">
+                                    <rdf:Description><xsd:maxExclusive rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">18</xsd:maxExclusive></rdf:Description>
+                                </owl:withRestrictions>
+                            </rdfs:Datatype>
+                        </owl:someValuesFrom>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <owl:Class rdf:about="#Adulte">
+        <rdfs:label xml:lang="fr">Adulte</rdfs:label>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="#Patient"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#age"/>
+                        <owl:someValuesFrom>
+                            <rdfs:Datatype>
+                                <owl:onDatatype rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+                                <owl:withRestrictions rdf:parseType="Collection">
+                                    <rdf:Description><xsd:minInclusive rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">18</xsd:minInclusive></rdf:Description>
+                                    <rdf:Description><xsd:maxInclusive rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">64</xsd:maxInclusive></rdf:Description>
+                                </owl:withRestrictions>
+                            </rdfs:Datatype>
+                        </owl:someValuesFrom>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <owl:Class rdf:about="#PersonneAgee">
+        <rdfs:label xml:lang="fr">Personne âgée</rdfs:label>
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:intersectionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="#Patient"/>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="#age"/>
+                        <owl:someValuesFrom>
+                            <rdfs:Datatype>
+                                <owl:onDatatype rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+                                <owl:withRestrictions rdf:parseType="Collection">
+                                    <rdf:Description><xsd:minInclusive rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">65</xsd:minInclusive></rdf:Description>
+                                </owl:withRestrictions>
+                            </rdfs:Datatype>
+                        </owl:someValuesFrom>
+                    </owl:Restriction>
+                </owl:intersectionOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+
+    <!-- ===================== CONDITION MEDICALE (disjointes) ===================== -->
+    <owl:Class rdf:about="#EtatPhysiologique"><rdfs:subClassOf rdf:resource="#ConditionMedicale"/><rdfs:label xml:lang="fr">État physiologique</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#EtatPathologique">
+        <rdfs:subClassOf rdf:resource="#ConditionMedicale"/>
+        <owl:disjointWith rdf:resource="#EtatPhysiologique"/>
+        <rdfs:label xml:lang="fr">État pathologique</rdfs:label>
+    </owl:Class>
+    <owl:Class rdf:about="#Grossesse"><rdfs:subClassOf rdf:resource="#EtatPhysiologique"/><rdfs:label xml:lang="fr">Grossesse</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Allaitement"><rdfs:subClassOf rdf:resource="#EtatPhysiologique"/><rdfs:label xml:lang="fr">Allaitement</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Allergie"><rdfs:subClassOf rdf:resource="#EtatPathologique"/><rdfs:label xml:lang="fr">Allergie</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#InsuffisanceRenale"><rdfs:subClassOf rdf:resource="#EtatPathologique"/><rdfs:label xml:lang="fr">Insuffisance rénale</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#InsuffisanceHepatique"><rdfs:subClassOf rdf:resource="#EtatPathologique"/><rdfs:label xml:lang="fr">Insuffisance hépatique</rdfs:label></owl:Class>
+
+    <!-- ===================== ETUDE CLINIQUE (disjointes) ===================== -->
+    <owl:Class rdf:about="#EssaiClinique"><rdfs:subClassOf rdf:resource="#EtudeClinique"/><rdfs:label xml:lang="fr">Essai clinique</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#EtudeObservationnelle">
+        <rdfs:subClassOf rdf:resource="#EtudeClinique"/>
+        <owl:disjointWith rdf:resource="#EssaiClinique"/>
+        <rdfs:label xml:lang="fr">Étude observationnelle</rdfs:label>
+    </owl:Class>
+
+    <!-- ===================== RESULTAT CLINIQUE ===================== -->
+    <owl:Class rdf:about="#Efficacite"><rdfs:subClassOf rdf:resource="#ResultatClinique"/><rdfs:label xml:lang="fr">Efficacité</rdfs:label></owl:Class>
+    <owl:Class rdf:about="#Securite">
+        <rdfs:subClassOf rdf:resource="#ResultatClinique"/>
+        <owl:disjointWith rdf:resource="#Efficacite"/>
+        <rdfs:label xml:lang="fr">Sécurité</rdfs:label>
+    </owl:Class>
+    <owl:Class rdf:about="#Tolerance"><rdfs:subClassOf rdf:resource="#Securite"/><rdfs:label xml:lang="fr">Tolérance</rdfs:label></owl:Class>
+
+    <!-- ===================== PROPRIETES D'OBJET ===================== -->
+    <owl:ObjectProperty rdf:about="#contientPrincipeActif">
+        <rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="#PrincipeActif"/>
+        <owl:inverseOf rdf:resource="#estPrincipeActifDe"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estPrincipeActifDe"/>
+
+    <owl:ObjectProperty rdf:about="#contientExcipient">
+        <rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="#Excipient"/>
+        <owl:inverseOf rdf:resource="#estExcipientDe"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estExcipientDe"/>
+
+    <owl:ObjectProperty rdf:about="#seMetaboliseEn">
+        <rdfs:domain rdf:resource="#Molecule"/><rdfs:range rdf:resource="#Metabolite"/>
+        <owl:inverseOf rdf:resource="#estMetaboliteDe"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estMetaboliteDe"/>
+
+    <owl:ObjectProperty rdf:about="#traite">
+        <rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="#Maladie"/>
+        <owl:inverseOf rdf:resource="#estTraiteePar"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estTraiteePar"/>
+
+    <owl:ObjectProperty rdf:about="#soulage">
+        <rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="#Symptome"/>
+        <owl:inverseOf rdf:resource="#estSoulagePar"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estSoulagePar"/>
+
+    <owl:ObjectProperty rdf:about="#provoque">
+        <rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="#EffetSecondaire"/>
+        <owl:inverseOf rdf:resource="#estProvoquePar"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estProvoquePar"/>
+
+    <owl:ObjectProperty rdf:about="#aPourContreIndication">
+        <rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="#ContreIndication"/>
+        <owl:inverseOf rdf:resource="#estContreIndicationDe"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estContreIndicationDe"/>
+
+    <owl:ObjectProperty rdf:about="#concerneCondition">
+        <rdfs:domain rdf:resource="#ContreIndication"/>
+        <rdfs:range>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="#ConditionMedicale"/>
+                    <rdf:Description rdf:about="#Maladie"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:range>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#presenteSymptome">
+        <rdfs:domain rdf:resource="#Maladie"/><rdfs:range rdf:resource="#Symptome"/>
+        <owl:inverseOf rdf:resource="#estSymptomeDe"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estSymptomeDe"/>
+
+    <owl:ObjectProperty rdf:about="#manifesteSymptome">
+        <rdfs:domain rdf:resource="#EffetSecondaire"/><rdfs:range rdf:resource="#Symptome"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#aPourMaladie">
+        <rdfs:domain rdf:resource="#Patient"/><rdfs:range rdf:resource="#Maladie"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#aPourCondition">
+        <rdfs:domain rdf:resource="#Patient"/><rdfs:range rdf:resource="#ConditionMedicale"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#ressentSymptome">
+        <rdfs:domain rdf:resource="#Patient"/><rdfs:range rdf:resource="#Symptome"/>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="#prend">
+        <rdfs:domain rdf:resource="#Patient"/><rdfs:range rdf:resource="#Medicament"/>
+        <owl:inverseOf rdf:resource="#estPrisPar"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#estPrisPar"/>
+
+    <owl:ObjectProperty rdf:about="#testeMedicament">
+        <rdfs:domain rdf:resource="#EtudeClinique"/><rdfs:range rdf:resource="#Medicament"/>
+        <owl:inverseOf rdf:resource="#testeDans"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#testeDans"/>
+
+    <owl:ObjectProperty rdf:about="#porteSurMaladie">
+        <rdfs:domain rdf:resource="#EtudeClinique"/><rdfs:range rdf:resource="#Maladie"/>
+    </owl:ObjectProperty>
+    <owl:ObjectProperty rdf:about="#aPourResultat">
+        <rdfs:domain rdf:resource="#EtudeClinique"/><rdfs:range rdf:resource="#ResultatClinique"/>
+    </owl:ObjectProperty>
+
+    <!-- ===================== PROPRIETES DE DONNEES ===================== -->
+    <owl:DatatypeProperty rdf:about="#nomCommercial"><rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#dosage"><rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#formeGalenique"><rdfs:domain rdf:resource="#Medicament"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#formuleChimique"><rdfs:domain rdf:resource="#Molecule"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#estChronique">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="#Maladie"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#codeCIM10"><rdfs:domain rdf:resource="#Maladie"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#intensite"><rdfs:domain rdf:resource="#Symptome"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#frequenceEffet"><rdfs:domain rdf:resource="#EffetSecondaire"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#gravite"><rdfs:domain rdf:resource="#EffetSecondaire"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#description"><rdfs:domain rdf:resource="#ContreIndication"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#age">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="#Patient"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+    </owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#sexe"><rdfs:domain rdf:resource="#Patient"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#severite"><rdfs:domain rdf:resource="#ConditionMedicale"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#phaseEssai"><rdfs:domain rdf:resource="#EtudeClinique"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#nombreParticipants"><rdfs:domain rdf:resource="#EtudeClinique"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#anneePublication"><rdfs:domain rdf:resource="#EtudeClinique"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#estComparative"><rdfs:domain rdf:resource="#EtudeClinique"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#valeurMesuree"><rdfs:domain rdf:resource="#ResultatClinique"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/></owl:DatatypeProperty>
+    <owl:DatatypeProperty rdf:about="#uniteMesure"><rdfs:domain rdf:resource="#ResultatClinique"/><rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/></owl:DatatypeProperty>
+
+    <!-- ===================== INDIVIDUS : MEDICAMENTS ===================== -->
+    <owl:NamedIndividual rdf:about="#Doliprane">
+        <rdf:type rdf:resource="#Antalgique"/>
+        <nomCommercial rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Doliprane</nomCommercial>
+        <dosage rdf:datatype="http://www.w3.org/2001/XMLSchema#string">1000 mg</dosage>
+        <formeGalenique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">comprimé</formeGalenique>
+        <contientPrincipeActif rdf:resource="#Paracetamol"/>
+        <contientExcipient rdf:resource="#Lactose"/>
+        <soulage rdf:resource="#Fievre"/>
+        <aPourContreIndication rdf:resource="#CI_Paracetamol_InsufHepatique"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#Glucophage">
+        <rdf:type rdf:resource="#Antidiabetique"/>
+        <nomCommercial rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Glucophage</nomCommercial>
+        <dosage rdf:datatype="http://www.w3.org/2001/XMLSchema#string">850 mg</dosage>
+        <formeGalenique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">comprimé</formeGalenique>
+        <contientPrincipeActif rdf:resource="#Metformine"/>
+        <traite rdf:resource="#DiabeteType2"/>
+        <provoque rdf:resource="#TroublesGastriques"/>
+        <aPourContreIndication rdf:resource="#CI_Metformine_InsufRenale"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#Amlor">
+        <rdf:type rdf:resource="#Antihypertenseur"/>
+        <nomCommercial rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Amlor</nomCommercial>
+        <dosage rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5 mg</dosage>
+        <formeGalenique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">gélule</formeGalenique>
+        <contientPrincipeActif rdf:resource="#Amlodipine"/>
+        <traite rdf:resource="#Hypertension"/>
+        <provoque rdf:resource="#Oedemes"/>
+    </owl:NamedIndividual>
+
+    <owl:NamedIndividual rdf:about="#Advil">
+        <rdf:type rdf:resource="#Antalgique"/>
+        <rdf:type rdf:resource="#AntiInflammatoire"/>
+        <nomCommercial rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Advil</nomCommercial>
+        <dosage rdf:datatype="http://www.w3.org/2001/XMLSchema#string">400 mg</dosage>
+        <formeGalenique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">comprimé</formeGalenique>
+        <contientPrincipeActif rdf:resource="#Ibuprofene"/>
+        <aPourContreIndication rdf:resource="#CI_Ibuprofene_Grossesse"/>
+    </owl:NamedIndividual>
+
+    <!-- ===================== INDIVIDUS : MOLECULES ===================== -->
+    <owl:NamedIndividual rdf:about="#Paracetamol">
+        <rdf:type rdf:resource="#PrincipeActif"/>
+        <formuleChimique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C8H9NO2</formuleChimique>
+        <seMetaboliseEn rdf:resource="#NAPQI"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Metformine">
+        <rdf:type rdf:resource="#PrincipeActif"/>
+        <formuleChimique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C4H11N5</formuleChimique>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Amlodipine">
+        <rdf:type rdf:resource="#PrincipeActif"/>
+        <formuleChimique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C20H25ClN2O5</formuleChimique>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Ibuprofene">
+        <rdf:type rdf:resource="#PrincipeActif"/>
+        <formuleChimique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C13H18O2</formuleChimique>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Lactose">
+        <rdf:type rdf:resource="#Excipient"/>
+        <formuleChimique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C12H22O11</formuleChimique>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#NAPQI">
+        <rdf:type rdf:resource="#Metabolite"/>
+        <formuleChimique rdf:datatype="http://www.w3.org/2001/XMLSchema#string">C8H7NO2</formuleChimique>
+    </owl:NamedIndividual>
+
+    <!-- ===================== INDIVIDUS : MALADIES ===================== -->
+    <owl:NamedIndividual rdf:about="#Grippe">
+        <rdf:type rdf:resource="#MaladieInfectieuse"/>
+        <codeCIM10 rdf:datatype="http://www.w3.org/2001/XMLSchema#string">J11</codeCIM10>
+        <presenteSymptome rdf:resource="#Fievre"/>
+        <presenteSymptome rdf:resource="#Toux"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#DiabeteType2">
+        <rdf:type rdf:resource="#Diabete"/>
+        <estChronique rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</estChronique>
+        <codeCIM10 rdf:datatype="http://www.w3.org/2001/XMLSchema#string">E11</codeCIM10>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Hypertension">
+        <rdf:type rdf:resource="#MaladieCardiovasculaire"/>
+        <estChronique rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</estChronique>
+        <codeCIM10 rdf:datatype="http://www.w3.org/2001/XMLSchema#string">I10</codeCIM10>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Asthme">
+        <rdf:type rdf:resource="#MaladieRespiratoire"/>
+        <codeCIM10 rdf:datatype="http://www.w3.org/2001/XMLSchema#string">J45</codeCIM10>
+        <presenteSymptome rdf:resource="#Toux"/>
+    </owl:NamedIndividual>
+
+    <!-- ===================== INDIVIDUS : SYMPTOMES ===================== -->
+    <owl:NamedIndividual rdf:about="#Fievre"><rdf:type rdf:resource="#SymptomeGeneral"/></owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Toux"><rdf:type rdf:resource="#SymptomeRespiratoire"/></owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Nausee"><rdf:type rdf:resource="#SymptomeDigestif"/></owl:NamedIndividual>
+
+    <!-- ===================== INDIVIDUS : EFFETS SECONDAIRES ===================== -->
+    <owl:NamedIndividual rdf:about="#TroublesGastriques">
+        <rdf:type rdf:resource="#EffetDigestif"/>
+        <frequenceEffet rdf:datatype="http://www.w3.org/2001/XMLSchema#string">fréquent</frequenceEffet>
+        <gravite rdf:datatype="http://www.w3.org/2001/XMLSchema#string">légère</gravite>
+        <manifesteSymptome rdf:resource="#Nausee"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Oedemes">
+        <rdf:type rdf:resource="#EffetCardiovasculaire"/>
+        <frequenceEffet rdf:datatype="http://www.w3.org/2001/XMLSchema#string">fréquent</frequenceEffet>
+        <gravite rdf:datatype="http://www.w3.org/2001/XMLSchema#string">modérée</gravite>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#EruptionCutanee">
+        <rdf:type rdf:resource="#EffetAllergique"/>
+        <frequenceEffet rdf:datatype="http://www.w3.org/2001/XMLSchema#string">rare</frequenceEffet>
+        <gravite rdf:datatype="http://www.w3.org/2001/XMLSchema#string">modérée</gravite>
+    </owl:NamedIndividual>
+
+    <!-- ===================== INDIVIDUS : CONDITIONS MEDICALES ===================== -->
+    <owl:NamedIndividual rdf:about="#Grossesse_T3">
+        <rdf:type rdf:resource="#Grossesse"/>
+        <severite rdf:datatype="http://www.w3.org/2001/XMLSchema#string">3e trimestre</severite>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#InsufRenaleSevere">
+        <rdf:type rdf:resource="#InsuffisanceRenale"/>
+        <severite rdf:datatype="http://www.w3.org/2001/XMLSchema#string">sévère</severite>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#InsufHepatiqueModeree">
+        <rdf:type rdf:resource="#InsuffisanceHepatique"/>
+        <severite rdf:datatype="http://www.w3.org/2001/XMLSchema#string">modérée</severite>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#AllergiePenicilline">
+        <rdf:type rdf:resource="#Allergie"/>
+    </owl:NamedIndividual>
+
+    <!-- ===================== INDIVIDUS : CONTRE-INDICATIONS ===================== -->
+    <owl:NamedIndividual rdf:about="#CI_Ibuprofene_Grossesse">
+        <rdf:type rdf:resource="#ContreIndicationAbsolue"/>
+        <description rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ibuprofène interdit en fin de grossesse</description>
+        <concerneCondition rdf:resource="#Grossesse_T3"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#CI_Metformine_InsufRenale">
+        <rdf:type rdf:resource="#ContreIndicationAbsolue"/>
+        <description rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Metformine interdite en insuffisance rénale sévère</description>
+        <concerneCondition rdf:resource="#InsufRenaleSevere"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#CI_Paracetamol_InsufHepatique">
+        <rdf:type rdf:resource="#ContreIndicationRelative"/>
+        <description rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Paracétamol déconseillé en insuffisance hépatique, à évaluer</description>
+        <concerneCondition rdf:resource="#InsufHepatiqueModeree"/>
+    </owl:NamedIndividual>
+
+    <!-- ===================== INDIVIDUS : PATIENTS ===================== -->
+    <owl:NamedIndividual rdf:about="#Patient_Sarah">
+        <rdf:type rdf:resource="#Patient"/>
+        <age rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">8</age>
+        <sexe rdf:datatype="http://www.w3.org/2001/XMLSchema#string">F</sexe>
+        <ressentSymptome rdf:resource="#Fievre"/>
+        <prend rdf:resource="#Doliprane"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Patient_Karim">
+        <rdf:type rdf:resource="#Patient"/>
+        <age rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">45</age>
+        <sexe rdf:datatype="http://www.w3.org/2001/XMLSchema#string">M</sexe>
+        <aPourMaladie rdf:resource="#DiabeteType2"/>
+        <prend rdf:resource="#Glucophage"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Patient_Fatma">
+        <rdf:type rdf:resource="#Patient"/>
+        <age rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">72</age>
+        <sexe rdf:datatype="http://www.w3.org/2001/XMLSchema#string">F</sexe>
+        <aPourMaladie rdf:resource="#Hypertension"/>
+        <prend rdf:resource="#Amlor"/>
+    </owl:NamedIndividual>
+
+    <!-- ===================== INDIVIDUS : ETUDES ET RESULTATS ===================== -->
+    <owl:NamedIndividual rdf:about="#Essai_Metformine_2024">
+        <rdf:type rdf:resource="#EssaiClinique"/>
+        <phaseEssai rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">3</phaseEssai>
+        <nombreParticipants rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">500</nombreParticipants>
+        <anneePublication rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2024</anneePublication>
+        <estComparative rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">true</estComparative>
+        <testeMedicament rdf:resource="#Glucophage"/>
+        <porteSurMaladie rdf:resource="#DiabeteType2"/>
+        <aPourResultat rdf:resource="#Res_Efficacite_Glucophage"/>
+        <aPourResultat rdf:resource="#Res_Tolerance_Glucophage"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Etude_Paracetamol_Obs">
+        <rdf:type rdf:resource="#EtudeObservationnelle"/>
+        <nombreParticipants rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1200</nombreParticipants>
+        <anneePublication rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">2023</anneePublication>
+        <estComparative rdf:datatype="http://www.w3.org/2001/XMLSchema#boolean">false</estComparative>
+        <testeMedicament rdf:resource="#Doliprane"/>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Res_Efficacite_Glucophage">
+        <rdf:type rdf:resource="#Efficacite"/>
+        <valeurMesuree rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">1.2</valeurMesuree>
+        <uniteMesure rdf:datatype="http://www.w3.org/2001/XMLSchema#string">% HbA1c (baisse)</uniteMesure>
+    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="#Res_Tolerance_Glucophage">
+        <rdf:type rdf:resource="#Tolerance"/>
+        <valeurMesuree rdf:datatype="http://www.w3.org/2001/XMLSchema#decimal">85</valeurMesuree>
+        <uniteMesure rdf:datatype="http://www.w3.org/2001/XMLSchema#string">% patients sans effet gênant</uniteMesure>
+    </owl:NamedIndividual>
+
+</rdf:RDF>
