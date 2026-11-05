@@ -5,9 +5,10 @@ import { DomainIcon } from '../components/Icons';
 import { isClinicalDomain, useClinicalCollection, useClinicalEntity } from '../hooks/useClinicalRecords';
 import ClinicalSource from '../components/ClinicalSource';
 import { isResearchDomain, useResearchRecord } from '../hooks/useResearchRecords';
+import { isDiseaseDomain, useDiseaseRecord } from '../hooks/useDiseaseRecords';
 import { useMedicationRecord } from '../hooks/useMedicationRecord';
 
-const targetDomains: Record<string, DomainSlug> = {aPourMaladie:'diseases', aPourCondition:'conditions', ressentSymptome:'symptoms', prend:'medications', contientPrincipeActif:'molecules', contientExcipient:'molecules', testeMedicament:'medications', porteSurMaladie:'diseases', aPourResultat:'results'};
+const targetDomains: Record<string, DomainSlug> = {aPourMaladie:'diseases', aPourCondition:'conditions', ressentSymptome:'symptoms', prend:'medications', contientPrincipeActif:'molecules', contientExcipient:'molecules', testeMedicament:'medications', porteSurMaladie:'diseases', aPourResultat:'results', presenteSymptome:'symptoms'};
 const propertyLabels: Record<string, string> = {age:'Age', sexe:'Sex', ageCategory:'Age category', category:'Condition category', severite:'Recorded severity',phaseEssai:'Trial phase',nombreParticipants:'Participants',anneePublication:'Publication year',estComparative:'Comparative study',valeurMesuree:'Measured value',uniteMesure:'Measurement unit'};
 const entityLink = (id: string, domain: string) => '/entity/' + encodeURIComponent(id) + '?domain=' + domain;
 
@@ -23,15 +24,17 @@ export default function Detail() {
   const medicationPatients = useClinicalCollection(pharmacology ? 'patients' : undefined);
   const research = isResearchDomain(clinicalDomain);
   const researchRecord = useResearchRecord(clinicalDomain,id);
-  const managed = clinical || pharmacology || research;
-  const {status,retry} = research ? researchRecord : pharmacology ? medicationRecord : clinicalRecord;
-  const entity = research ? researchRecord.entity : pharmacology ? medicationRecord.entity : clinical ? clinicalRecord.data ?? (status === 'unavailable' && previewEntity?.domain === clinicalDomain ? previewEntity : undefined) : previewEntity;
+  const disease = isDiseaseDomain(clinicalDomain);
+  const diseaseRecord = useDiseaseRecord(clinicalDomain,id);
+  const managed = clinical || pharmacology || research || disease;
+  const {status,retry} = disease ? diseaseRecord : research ? researchRecord : pharmacology ? medicationRecord : clinicalRecord;
+  const entity = disease ? diseaseRecord.entity : research ? researchRecord.entity : pharmacology ? medicationRecord.entity : clinical ? clinicalRecord.data ?? (status === 'unavailable' && previewEntity?.domain === clinicalDomain ? previewEntity : undefined) : previewEntity;
   if ((managed) && status === 'loading') return <div className="empty-state" role="status"><h2>Loading record…</h2></div>;
   if (!entity) return <div className="empty-state">{(managed) && <ClinicalSource status={status} retry={retry}/>}<h2>{status === 'unavailable' || status === 'error' ? 'This record could not be loaded.' : "We couldn't find that concept."}</h2><Link className="button-primary" to="/search">Explore the library <ArrowRight size={17}/></Link></div>;
   const domain = getDomain(entity.domain)!;
   const incoming = pharmacology
     ? (medicationPatients.data ?? []).flatMap(patient=>(patient.relations ?? []).filter(link=>link.target === entity.id && link.predicate === 'prend').map(link=>({predicate:link.predicate,source:patient})))
-    : (clinical || research) && status === 'connected'
+    : (clinical || research || disease) && status === 'connected'
     ? (entity.incomingRelations ?? []).map(rel => ({predicate:rel.predicate, source:{id:rel.source, domain:rel.sourceDomain, name:rel.source.replaceAll('_',' ')}}))
     : entities.flatMap(other => (other.relations ?? []).filter(rel => rel.target === entity.id).map(rel => ({...rel,source:other})));
   const properties = Object.entries({Identifier: entity.id, 'Ontology class': domain.owl, Category: entity.type, ...entity.properties}).map(([key,value])=>[propertyLabels[key] ?? key,value]);
@@ -50,11 +53,11 @@ export default function Detail() {
           {entity.relations?.length ? <div className="relationship-list">{entity.relations.map((rel,i) => {
             const target = getEntity(rel.target);
             const targetDomain = targetDomains[rel.predicate] ?? target?.domain;
-            return <div className="relationship-row" key={i}><span className="relationship-predicate">{rel.predicate}</span><span className="relationship-direction"><ArrowRight size={19}/></span>{targetDomain ? <Link to={entityLink(rel.target,targetDomain)}><span>{rel.target.replaceAll('_',' ')}{(managed) && !isClinicalDomain(targetDomain) && targetDomain !== 'medications' && !isResearchDomain(targetDomain) && <small className="relationship-source"> Sample profile</small>}</span><ArrowUpRight size={17}/></Link> : <span>{rel.target}</span>}</div>;
+            return <div className="relationship-row" key={i}><span className="relationship-predicate">{rel.predicate}</span><span className="relationship-direction"><ArrowRight size={19}/></span>{targetDomain ? <Link to={entityLink(rel.target,targetDomain)}><span>{rel.target.replaceAll('_',' ')}{(managed) && !isClinicalDomain(targetDomain) && targetDomain !== 'medications' && !isResearchDomain(targetDomain) && !isDiseaseDomain(targetDomain) && <small className="relationship-source"> Sample profile</small>}</span><ArrowUpRight size={17}/></Link> : <span>{rel.target}</span>}</div>;
           })}</div> : <div className="relationship-empty">No outgoing relationships are recorded for this concept.</div>}
         </section>
         {(!clinical || entity.domain === 'conditions') && (!pharmacology || medicationPatients.status === 'connected') && <section className="detail-panel"><header><span className="detail-heading-icon"><Link2 size={21}/></span><div><h3>{pharmacology ? 'Patients taking this medication' : 'Incoming relationships'}</h3><p>Other concepts linking to this one</p></div><span className="detail-count">{incoming.length}</span></header>
-          {incoming.length ? <div className="relationship-list">{incoming.map((rel,i)=><div className="relationship-row" key={i}><Link to={entityLink(rel.source.id,rel.source.domain)}><span>{rel.source.name.replaceAll('_',' ')}{clinical && !isClinicalDomain(rel.source.domain) && <small className="relationship-source"> Sample profile</small>}</span><ArrowUpRight size={17}/></Link><span className="relationship-direction"><ArrowRight size={19}/></span><span className="relationship-predicate">{rel.predicate}</span></div>)}</div> : <div className="relationship-empty">No incoming relationships are recorded for this concept.</div>}
+          {disease && entity.domain === 'symptoms' && diseaseRecord.incoming.status !== 'connected' ? <ClinicalSource status={diseaseRecord.incoming.status} retry={diseaseRecord.incoming.retry}/> : incoming.length ? <div className="relationship-list">{incoming.map((rel,i)=><div className="relationship-row" key={i}><Link to={entityLink(rel.source.id,rel.source.domain)}><span>{rel.source.name.replaceAll('_',' ')}{clinical && !isClinicalDomain(rel.source.domain) && <small className="relationship-source"> Sample profile</small>}</span><ArrowUpRight size={17}/></Link><span className="relationship-direction"><ArrowRight size={19}/></span><span className="relationship-predicate">{rel.predicate}</span></div>)}</div> : <div className="relationship-empty">{disease && entity.domain === 'diseases' ? 'Incoming relationships are not available for this record.' : 'No incoming relationships are recorded for this concept.'}</div>}
         </section>}
       </div>
       <aside className="detail-side"><section className="detail-panel"><header><span className="detail-heading-icon"><Layers3 size={21}/></span><div><h3>Properties</h3><p>Ontology attributes</p></div></header><dl className="profile-properties">{properties.map(([key,value])=><div key={key}><dt>{key}</dt><dd>{value}</dd></div>)}</dl></section>

@@ -9,6 +9,8 @@ from app.routes.recherche import router as recherche_router
 from app.routes.etudes import router as etudes_router
 from app.routes.resultats import router as resultats_router
 
+from app.routes.clinical import router as clinical_router
+
 app = FastAPI(title="MedSemantic API", version="1.0.0")
 
 # Local Vite dev servers. No cookies or private clinical datasets are used.
@@ -19,7 +21,7 @@ app.add_middleware(
         'http://127.0.0.1:5173', 'http://127.0.0.1:5174',
     ],
     allow_credentials=False,
-    allow_methods=['GET', 'POST', 'PUT', 'DELETE'],
+    allow_methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allow_headers=['*'],
 )
 
@@ -29,6 +31,7 @@ app.include_router(medicaments_router)
 app.include_router(recherche_router)
 app.include_router(etudes_router)
 app.include_router(resultats_router)
+app.include_router(clinical_router)
 
 
 @app.get('/')

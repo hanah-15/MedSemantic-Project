@@ -7,13 +7,14 @@ import { isClinicalDomain, useClinicalCollection, useClinicalResource } from '..
 import ClinicalSource from '../components/ClinicalSource';
 import EntityCard from '../components/EntityCard';
 import PharmacologyCollection from './PharmacologyCollection';
+import DiseaseCollection from './DiseaseCollection';
 import ResearchCollection from './ResearchCollection';
 import ClinicalEditor from '../components/ClinicalEditor';
 import { apiWrite } from '../lib/api';
 
 export default function Collection() {
   const {slug} = useParams();
-  return slug === 'medications' ? <PharmacologyCollection/> : slug === 'studies' || slug === 'results' ? <ResearchCollection key={slug}/> : <OntologyCollection key={slug}/>;
+  return slug === 'medications' ? <PharmacologyCollection/> : slug === 'studies' || slug === 'results' ? <ResearchCollection key={slug}/> : slug === 'diseases' || slug === 'symptoms' ? <DiseaseCollection key={slug}/> : <OntologyCollection key={slug}/>;
 }
 
 function OntologyCollection() {

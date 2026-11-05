@@ -9,6 +9,7 @@ import EntityCard from '../components/EntityCard';
 import { medicamentApi, type NlpSearchResponse } from '../lib/medicamentApi';
 import { useClinicalCollection } from '../hooks/useClinicalRecords';
 import ClinicalSource from '../components/ClinicalSource';
+import { useDiseaseCollection } from '../hooks/useDiseaseRecords';
 import { useMedicationCollection } from '../hooks/useMedicationRecord';
 
 const clinicalIntentLabels:Record<string,string> = {
@@ -31,16 +32,20 @@ export default function SearchPage() {
   const patients = useClinicalCollection('patients');
   const conditions = useClinicalCollection('conditions');
   const medications = useMedicationCollection();
+  const diseases = useDiseaseCollection('diseases');
+  const symptoms = useDiseaseCollection('symptoms');
   const livePatients = patients.data;
   const liveConditions = conditions.data;
   const searchable = useMemo(() => [
-    ...entities.filter(item => item.domain === 'patients' ? patients.status === 'unavailable' : item.domain === 'conditions' ? conditions.status === 'unavailable' : item.domain !== 'medications'),
+    ...entities.filter(item => item.domain === 'patients' ? patients.status === 'unavailable' : item.domain === 'conditions' ? conditions.status === 'unavailable' : !['medications','diseases','symptoms'].includes(item.domain)),
     ...(livePatients ?? []),
     ...(liveConditions ?? []),
     ...(medications.data ?? []),
-  ], [livePatients, liveConditions, patients.status, conditions.status, medications.data]);
+    ...(diseases.data ?? []),
+    ...(symptoms.data ?? []),
+  ], [livePatients, liveConditions, patients.status, conditions.status, medications.data, diseases.data, symptoms.data]);
   const matches = useMemo(() => searchable.filter(entity => {
-    const text = [entity.id,entity.name,entity.type,entity.description,...Object.values(entity.properties ?? {})].join(' ').toLowerCase();
+    const text = [entity.id,entity.name,entity.type,entity.description,...Object.values(entity.properties ?? {}),...(entity.relations ?? []).flatMap(relation=>[relation.predicate,relation.target])].join(' ').toLowerCase();
     return (filter === 'all' || entity.domain === filter) && text.includes(query.trim().toLowerCase());
   }),[filter,query,searchable]);
 
@@ -271,10 +276,11 @@ export default function SearchPage() {
       </div>
 
       {(patients.status !== 'connected' || conditions.status !== 'connected' || medications.status !== 'connected') && <div className="search-sources">{patients.status !== 'connected' && <><span>Patients</span><ClinicalSource status={patients.status} retry={patients.retry} preview/></>}{conditions.status !== 'connected' && <><span>Medical conditions</span><ClinicalSource status={conditions.status} retry={conditions.retry} preview/></>}{medications.status !== 'connected' && <><span>Medications</span><ClinicalSource status={medications.status} retry={medications.retry}/></>}</div>}
+      {(diseases.status !== 'connected' || symptoms.status !== 'connected') && <div className="search-sources">{diseases.status !== 'connected' && <><span>Diseases</span><ClinicalSource status={diseases.status} retry={diseases.retry}/></>}{symptoms.status !== 'connected' && <><span>Symptoms</span><ClinicalSource status={symptoms.status} retry={symptoms.retry}/></>}</div>}
       {matches.length ? (
         <div className="entity-grid">
           {matches.map(entity => (
-            <div className="search-result" key={entity.id}>{!(entity.domain === 'patients' && patients.status === 'connected' || entity.domain === 'conditions' && conditions.status === 'connected' || entity.domain === 'medications' && medications.status === 'connected') && <span className="record-source">Sample record</span>}<EntityCard item={entity}/></div>
+            <div className="search-result" key={entity.id}>{!(entity.domain === 'patients' && patients.status === 'connected' || entity.domain === 'conditions' && conditions.status === 'connected' || entity.domain === 'medications' && medications.status === 'connected' || entity.domain === 'diseases' && diseases.status === 'connected' || entity.domain === 'symptoms' && symptoms.status === 'connected') && <span className="record-source">Sample record</span>}<EntityCard item={entity}/></div>
           ))}
         </div>
       ) : (
