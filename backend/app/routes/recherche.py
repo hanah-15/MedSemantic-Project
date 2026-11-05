@@ -1,8 +1,9 @@
 import re
 from fastapi import APIRouter, Query
 from app.services.clinical_nlp import answer_clinical_question
+from app.services.safety_nlp import answer_safety_question
 from app.services.nlp_service import analyser_requete_nlp
-from app.services.sparql_service import execute_sparql_query
+from app.services.sparql_service import execute_sparql_query, PREFIXES as SPARQL_PREFIXES
 
 router = APIRouter(prefix="/api/recherche", tags=["Recherche NLP"])
 
@@ -13,9 +14,13 @@ def echapper_sparql(valeur: str) -> str:
 @router.get("/")
 def recherche_intelligente(q: str = Query(min_length=1, max_length=500)):
     """Point d'entrée pour les questions en langage naturel traitées par NLP et résolues via Fuseki."""
+    safety = answer_safety_question(q)
+    if safety is not None:
+        return safety
     clinical = answer_clinical_question(q)
     if clinical is not None:
         return clinical
+    query = None
     analyse = analyser_requete_nlp(q)
     intention = analyse["intention"]
     medicament = analyse["medicament"]
@@ -23,6 +28,8 @@ def recherche_intelligente(q: str = Query(min_length=1, max_length=500)):
     if not medicament:
         return {
             "query": q,
+            "sparql": SPARQL_PREFIXES + query if query else None,
+            "tools": ["spaCy", "fr_core_news_sm", "PhraseMatcher", "SPARQL templates"],
             "intention": intention,
             "medicament": None,
             "reponse": "Je n'ai pas pu identifier de médicament dans votre question. Essayez par exemple : 'Quel est le dosage du Doliprane ?' ou 'Composition de l'Advil'."
@@ -53,6 +60,8 @@ def recherche_intelligente(q: str = Query(min_length=1, max_length=500)):
         if not resultats:
             return {
                 "query": q,
+            "sparql": SPARQL_PREFIXES + query if query else None,
+            "tools": ["spaCy", "fr_core_news_sm", "PhraseMatcher", "SPARQL templates"],
                 "intention": intention,
                 "medicament": medicament,
                 "reponse": f"Aucune composition chimique enregistrée dans l'ontologie pour '{medicament}'."
@@ -78,6 +87,8 @@ def recherche_intelligente(q: str = Query(min_length=1, max_length=500)):
         reponse_str = f"Le médicament {medicament} contient : {' | '.join(detail_txt) if detail_txt else ', '.join(m['nom'] for m in molecules)}."
         return {
             "query": q,
+            "sparql": SPARQL_PREFIXES + query if query else None,
+            "tools": ["spaCy", "fr_core_news_sm", "PhraseMatcher", "SPARQL templates"],
             "intention": intention,
             "medicament": medicament,
             "reponse": reponse_str,
@@ -100,12 +111,16 @@ def recherche_intelligente(q: str = Query(min_length=1, max_length=500)):
             dosage = res[0]["dosage"]["value"]
             return {
                 "query": q,
+            "sparql": SPARQL_PREFIXES + query if query else None,
+            "tools": ["spaCy", "fr_core_news_sm", "PhraseMatcher", "SPARQL templates"],
                 "intention": intention,
                 "medicament": nom_exact,
                 "reponse": f"Le dosage de {nom_exact} est de {dosage}."
             }
         return {
             "query": q,
+            "sparql": SPARQL_PREFIXES + query if query else None,
+            "tools": ["spaCy", "fr_core_news_sm", "PhraseMatcher", "SPARQL templates"],
             "intention": intention,
             "medicament": medicament,
             "reponse": f"Le dosage pour '{medicament}' n'est pas précisé dans la base de connaissances."
@@ -127,12 +142,16 @@ def recherche_intelligente(q: str = Query(min_length=1, max_length=500)):
             forme = res[0]["forme"]["value"]
             return {
                 "query": q,
+            "sparql": SPARQL_PREFIXES + query if query else None,
+            "tools": ["spaCy", "fr_core_news_sm", "PhraseMatcher", "SPARQL templates"],
                 "intention": intention,
                 "medicament": nom_exact,
                 "reponse": f"La forme galénique de {nom_exact} est : {forme}."
             }
         return {
             "query": q,
+            "sparql": SPARQL_PREFIXES + query if query else None,
+            "tools": ["spaCy", "fr_core_news_sm", "PhraseMatcher", "SPARQL templates"],
             "intention": intention,
             "medicament": medicament,
             "reponse": f"La forme galénique pour '{medicament}' n'est pas renseignée dans la base."
@@ -141,6 +160,8 @@ def recherche_intelligente(q: str = Query(min_length=1, max_length=500)):
     # 4. INTENTION NON RECONNUE MAIS MÉDICAMENT TROUVÉ
     return {
         "query": q,
+            "sparql": SPARQL_PREFIXES + query if query else None,
+            "tools": ["spaCy", "fr_core_news_sm", "PhraseMatcher", "SPARQL templates"],
         "intention": intention,
         "medicament": medicament,
         "reponse": f"Médicament détecté ({medicament}), mais l'intention est incertaine. Vous pouvez demander par exemple : 'Quel est le dosage de {medicament} ?' ou 'Quelle est la composition de {medicament} ?'"

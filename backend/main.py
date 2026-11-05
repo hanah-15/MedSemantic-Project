@@ -10,6 +10,10 @@ from app.routes.etudes import router as etudes_router
 from app.routes.resultats import router as resultats_router
 
 from app.routes.clinical import router as clinical_router
+from app.routes.effets_secondaires import router as effets_secondaires_router
+from app.routes.contre_indications import router as contre_indications_router
+
+from app.routes.molecules import router as molecules_router
 
 app = FastAPI(title="MedSemantic API", version="1.0.0")
 
@@ -32,6 +36,11 @@ app.include_router(recherche_router)
 app.include_router(etudes_router)
 app.include_router(resultats_router)
 app.include_router(clinical_router)
+app.include_router(molecules_router)
+app.include_router(effets_secondaires_router)
+app.include_router(effets_secondaires_router, prefix="/api")
+app.include_router(contre_indications_router)
+app.include_router(contre_indications_router, prefix="/api")
 
 
 @app.get('/')

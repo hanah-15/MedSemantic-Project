@@ -80,6 +80,12 @@ export function isResearchDomain(domain?: string): domain is 'studies'|'results'
   return domain === 'studies' || domain === 'results';
 }
 
+export function useResearchCollection(domain?:string) {
+  const path = isResearchDomain(domain) ? domain === 'studies' ? '/etudes/' : '/resultats/' : null;
+  const result = useClinicalResource<(EtudeApi|ResultatApi)[]>(path ?? '',path);
+  return {...result,data:result.data?.map(record=>domain === 'studies' ? mapEtudeToEntity(record as EtudeApi) : mapResultatToEntity(record as ResultatApi)) ?? null};
+}
+
 export function useResearchRecord(domain?: string, id?: string) {
   const path = isResearchDomain(domain) && id ? (domain === 'studies' ? '/etudes/' : '/resultats/')+encodeURIComponent(id) : null;
   const resource = useClinicalResource<EtudeApi|ResultatApi>(path ?? '',path);

@@ -4,8 +4,8 @@ import type { Entity } from '../data/ontology';
 import type { LoadStatus } from './useClinicalRecords';
 import { useClinicalResource } from './useClinicalRecords';
 
-export function useMedicationCollection() {
-  const result = useClinicalResource<Medicament[]>('medications','/api/medicaments/');
+export function useMedicationCollection(enabled=true) {
+  const result = useClinicalResource<Medicament[]>('medications',enabled ? '/api/medicaments/' : null);
   return {...result,data:result.data?.map(medicationToEntity) ?? null};
 }
 

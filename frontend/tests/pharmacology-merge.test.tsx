@@ -88,7 +88,7 @@ it('opens new medication profiles and molecule composition without a preview ent
   await screen.findByRole('heading',{name:'New medication.'});
   expect(screen.getByRole('heading',{name:'Composition chimique'})).toBeTruthy();
   expect(screen.getByText('C2H6')).toBeTruthy();
-  expect(screen.getByRole('link',{name:/NewMolecule.*Sample profile/}).getAttribute('href')).toBe('/entity/NewMolecule?domain=molecules');
+  expect(screen.getByRole('link',{name:"NewMolecule"}).getAttribute('href')).toBe('/entity/NewMolecule?domain=molecules');
 });
 
 it('links medication profiles back to actual patients from the other module',async()=>{

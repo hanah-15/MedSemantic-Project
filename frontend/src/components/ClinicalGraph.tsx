@@ -1,25 +1,26 @@
 import { ArrowRight, Network } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { useClinicalCollection } from '../hooks/useClinicalRecords';
+import { useAtlasCollection } from '../hooks/useAtlasCollection';
+import { domains, getEntity } from '../data/ontology';
 import ClinicalSource from './ClinicalSource';
 
-const targetDomains: Record<string, string> = {aPourMaladie:'diseases', aPourCondition:'conditions', ressentSymptome:'symptoms', prend:'medications'};
+const targetDomains: Record<string, string> = {aPourMaladie:'diseases', aPourCondition:'conditions', ressentSymptome:'symptoms', prend:'medications',contientPrincipeActif:'molecules',contientExcipient:'molecules',seMetaboliseEn:'molecules',presenteSymptome:'symptoms',manifesteSymptome:'symptoms',testeMedicament:'medications',porteSurMaladie:'diseases',aPourResultat:'results',concerneCondition:'conditions'};
 
 export default function ClinicalGraph() {
   const [params,setParams] = useSearchParams();
-  const domain = params.get('domain') === 'conditions' ? 'conditions' : 'patients';
-  const {data, status, retry} = useClinicalCollection(domain);
+  const domain = domains.find(item=>item.slug === params.get('domain'))?.slug ?? 'patients';
+  const {data, status, retry} = useAtlasCollection(domain);
   const selectedId = params.get('id') ?? data?.[0]?.id ?? '';
   const record = data?.find(item=>item.id === selectedId);
   const edges = [
-    ...(record?.relations ?? []).map(link=>({predicate:link.predicate, id:link.target, domain:targetDomains[link.predicate], incoming:false})),
+    ...(record?.relations ?? []).map(link=>({predicate:link.predicate, id:link.target, domain:getEntity(link.target)?.domain ?? targetDomains[link.predicate], incoming:false})),
     ...(record?.incomingRelations ?? []).map(link=>({predicate:link.predicate, id:link.source, domain:link.sourceDomain, incoming:true})),
   ];
   const height = Math.max(220, edges.length * 100 + 40);
   return <section className="detail-panel clinical-graph">
-    <header><span className="detail-heading-icon"><Network size={22}/></span><div><h2>Recorded connections</h2><p>Explore relationships between patients and medical conditions</p></div></header>
+    <header><span className="detail-heading-icon"><Network size={22}/></span><div><h2>Recorded connections</h2><p>Explore recorded relationships across the medical ontology</p></div></header>
     <div className="clinical-graph-body">
-      <div className="clinical-filters"><label>Collection<select aria-label="Graph collection" value={domain} onChange={event=>setParams({domain:event.target.value})}><option value="patients">Patients</option><option value="conditions">Medical conditions</option></select></label>
+      <div className="clinical-filters"><label>Collection<select aria-label="Graph collection" value={domain} onChange={event=>setParams({domain:event.target.value})}>{domains.map(item=><option key={item.slug} value={item.slug}>{item.title}</option>)}</select></label>
         <label>Record<select aria-label="Graph record" value={selectedId} onChange={event=>setParams({domain,id:event.target.value})} disabled={!data?.length}>{params.has('id') && !record && <option value={selectedId}>{selectedId}</option>}{data?.map(item=><option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
       </div>
       <ClinicalSource status={status} retry={retry}/>

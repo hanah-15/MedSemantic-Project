@@ -440,3 +440,5 @@ button:focus-visible, a:focus-visible, input:focus-visible, .graph-node:focus-vi
 .clinical-link-options p { color: var(--muted); font-size: 14px; }
 .clinical-modal footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 6px; }
 button:disabled { opacity: .55; cursor: not-allowed; }
+
+.sparql-preview{margin-top:18px;min-width:0}.sparql-preview summary{cursor:pointer;font-weight:600}.sparql-preview pre{overflow:auto;max-height:360px;padding:16px;border-radius:10px;background:#f1f8fa;white-space:pre;font-size:13px}

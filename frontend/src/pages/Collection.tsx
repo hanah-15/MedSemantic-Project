@@ -7,6 +7,8 @@ import { isClinicalDomain, useClinicalCollection, useClinicalResource } from '..
 import ClinicalSource from '../components/ClinicalSource';
 import EntityCard from '../components/EntityCard';
 import PharmacologyCollection from './PharmacologyCollection';
+import SafetyCollection from './SafetyCollection';
+import { useMoleculeCollection } from '../hooks/useMoleculeRecords';
 import DiseaseCollection from './DiseaseCollection';
 import ResearchCollection from './ResearchCollection';
 import ClinicalEditor from '../components/ClinicalEditor';
@@ -14,7 +16,7 @@ import { apiWrite } from '../lib/api';
 
 export default function Collection() {
   const {slug} = useParams();
-  return slug === 'medications' ? <PharmacologyCollection/> : slug === 'studies' || slug === 'results' ? <ResearchCollection key={slug}/> : slug === 'diseases' || slug === 'symptoms' ? <DiseaseCollection key={slug}/> : <OntologyCollection key={slug}/>;
+  return slug === 'medications' ? <PharmacologyCollection/> : slug === 'studies' || slug === 'results' ? <ResearchCollection key={slug}/> : slug === 'diseases' || slug === 'symptoms' ? <DiseaseCollection key={slug}/> : slug === 'side-effects' || slug === 'contraindications' ? <SafetyCollection key={slug}/> : <OntologyCollection key={slug}/>;
 }
 
 function OntologyCollection() {
@@ -35,11 +37,12 @@ function OntologyCollection() {
     : {q:query,category:category === 'all' ? '' : category,severity};
   const { data: liveItems, status, retry } = useClinicalCollection(slug,filters);
   const clinical = isClinicalDomain(slug);
+  const molecules = useMoleculeCollection(slug === 'molecules');
   const filterOptions = useClinicalResource<{sexes?:string[];severities?:string[]}>(clinical ? slug+'/filter-options' : '',clinical ? '/api/'+slug+'/filter-options' : null);
   const filterValue = slug === 'patients' ? sex : severity;
   const filterValues = [...new Set([...(filterOptions.data?.[slug === 'patients' ? 'sexes' : 'severities'] ?? []),...(filterValue ? [filterValue] : [])])].sort();
   const hasFilters = !!(query.trim() || category !== 'all' || minAge || maxAge || sex || severity);
-  const domainItems = clinical && status !== 'unavailable' ? liveItems ?? [] : entities.filter(entity => entity.domain === slug);
+  const domainItems = slug === 'molecules' ? molecules.data ?? [] : clinical && status !== 'unavailable' ? liveItems ?? [] : entities.filter(entity => entity.domain === slug);
   if (!domain) return <div className="empty-state"><SearchX size={32}/><h2>Collection not found</h2><Link className="button-primary" to="/">Back to overview <ArrowRight size={17}/></Link></div>;
   const categoryKey = slug === 'patients' ? 'ageCategory' : 'category';
   const categories = slug === 'patients' ? ['Enfant','Adulte','PersonneAgee'] : ['EtatPhysiologique','EtatPathologique'];
@@ -62,6 +65,7 @@ function OntologyCollection() {
     <div className="section-intro collection-intro"><div><span className="eyebrow">BROWSE & DISCOVER</span><h2>The collection<span className="heading-dot">.</span></h2><p>Explore the available records and their defined relationships.</p></div><label className="collection-search"><Search size={20}/><input aria-label={'Filter '+domain.title} placeholder={'Search '+domain.title.toLowerCase()+'...'} value={query} onChange={e=>setQuery(e.target.value)}/></label></div>
     {clinical && <div className="clinical-toolbar"><ClinicalSource status={status} retry={()=>{retry();filterOptions.retry();}} preview/><button className="button-primary" disabled={status !== 'connected'} onClick={()=>{setEditing(null);setFeedback('');}}><Plus size={18}/>Add {slug === 'patients' ? 'patient' : 'condition'}</button></div>}
     {clinical && status === 'connected' && ['unavailable','error','not-found'].includes(filterOptions.status) && <div className="source-status" role="status">Filter choices could not be loaded.<button onClick={filterOptions.retry}>Try again</button></div>}
+    {slug === 'molecules' && <ClinicalSource status={molecules.status} retry={molecules.retry}/>}
     {feedback && <p role="status" className="clinical-success">{feedback}</p>}
     {mutationError && <p role="alert" className="clinical-error">{mutationError}</p>}
     {clinical && <div className="clinical-filters">{slug === 'patients' ? <><label>Minimum age<input type="number" min="0" value={minAge} onChange={event=>setMinAge(event.target.value)}/></label><label>Maximum age<input type="number" min="0" value={maxAge} onChange={event=>setMaxAge(event.target.value)}/></label><label>Sex<select value={sex} onChange={event=>setSex(event.target.value)}><option value="">All</option>{filterValues.map(value=><option key={value} value={value}>{value === 'F' ? 'Female (F)' : value === 'M' ? 'Male (M)' : value}</option>)}</select></label></> : <label>Severity<select value={severity} onChange={event=>setSeverity(event.target.value)}><option value="">All severities</option>{filterValues.map(value=><option key={value} value={value}>{value}</option>)}</select></label>}</div>}
