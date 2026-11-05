@@ -6,6 +6,9 @@ from app.routes.patients import router as patients_router
 from app.routes.medicaments import router as medicaments_router
 from app.routes.recherche import router as recherche_router
 
+from app.routes.etudes import router as etudes_router
+from app.routes.resultats import router as resultats_router
+
 app = FastAPI(title="MedSemantic API", version="1.0.0")
 
 # Local Vite dev servers. No cookies or private clinical datasets are used.
@@ -24,6 +27,8 @@ app.include_router(patients_router)
 app.include_router(conditions_router)
 app.include_router(medicaments_router)
 app.include_router(recherche_router)
+app.include_router(etudes_router)
+app.include_router(resultats_router)
 
 
 @app.get('/')
