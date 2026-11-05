@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.routes.clinical import router as clinical_router
+
 app = FastAPI(title="MedSemantic API", version="1.0.0")
 
 app.add_middleware(
@@ -14,6 +16,8 @@ app.add_middleware(
 @app.get("/")
 def read_root():
     return {"status": "success", "message": "API MedSemantic opérationnelle"}
+
+app.include_router(clinical_router)
 
 if __name__ == "__main__":
     import uvicorn

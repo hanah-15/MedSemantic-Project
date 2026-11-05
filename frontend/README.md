@@ -35,7 +35,7 @@ The shared shell, typography, search, graph explorer, and reusable entity cards 
 - `/graph` — shared ontology class graph
 - `/entity/:id` — reusable detail page
 
-The frontend currently renders illustrative records, not data fetched from Fuseki. The backend exposes its health endpoint at `http://127.0.0.1:8000/` and the shared API adapter is in `src/lib/api.ts`. Replace the local records with FastAPI data when the team's endpoints are implemented. Avoid direct calls from browsers to Fuseki. Do not use these records for clinical decisions.
+The Diseases and Symptoms collections, their detail pages, and global search load live records from the FastAPI endpoints. Other collections continue to use illustrative local records. The API base defaults to `http://127.0.0.1:8000`; set `VITE_API_BASE_URL` in a frontend `.env` file to point to a different FastAPI server. The browser calls FastAPI, never Fuseki directly. Local sample records are not clinical guidance.
 
 ## Design palette
 

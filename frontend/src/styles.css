@@ -259,6 +259,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, .graph-node:focus-vi
 .empty-state > span { display: grid; place-items: center; width: 80px; height: 80px; background: #e5f8f3; color: #14958b; border-radius: 20px; }
 .empty-state h2, .empty-state h3 { font-family: var(--heading); font-size: 23px; margin: 7px 0 0; }
 .empty-state p { color: #829aa6; max-width: 450px; font-size: 14px; line-height: 1.7; margin: 0 0 8px; }
+.api-error-state p { color: #a33e42; }
+.api-error-message { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 18px; border: 1px solid #f0c8c8; border-radius: 12px; background: #fff7f6; color: #8e3d42; }
+.api-error-message p { margin: 0; font-size: 13px; line-height: 1.6; }
+.api-error-message .button-primary { flex: 0 0 auto; }
+.api-loading-message { color: #718996; font-size: 13px; }
 /* Collections */
 .back-link { display: inline-flex; gap: 9px; align-items: center; align-self: flex-start; color: #648698; font-size: 13px; font-weight: 800; }
 .back-link:hover { color: var(--teal); }

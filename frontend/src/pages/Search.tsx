@@ -1,17 +1,59 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowRight, Filter, Search, SearchX, SlidersHorizontal } from 'lucide-react';
-import { domains, entities } from '../data/ontology';
+import { domains, entities, type Entity } from '../data/ontology';
 import EntityCard from '../components/EntityCard';
+import { listClinicalRecords, toClinicalEntity } from '../lib/ontologyApi';
 
 export default function SearchPage() {
   const [params,setParams] = useSearchParams();
   const query = params.get('q') ?? '';
   const [filter,setFilter] = useState('all');
-  const matches = useMemo(() => entities.filter(entity => {
-    const text = [entity.id,entity.name,entity.type,entity.description,...Object.values(entity.properties ?? {})].join(' ').toLowerCase();
+  const [clinicalEntities, setClinicalEntities] = useState<Entity[]>([]);
+  const [clinicalError, setClinicalError] = useState<string | null>(null);
+  const [clinicalLoading, setClinicalLoading] = useState(true);
+  const [reload, setReload] = useState(0);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setClinicalError(null);
+    setClinicalLoading(true);
+    Promise.all([
+      listClinicalRecords('diseases', controller.signal),
+      listClinicalRecords('symptoms', controller.signal),
+    ])
+      .then(([diseases, symptoms]) => {
+        setClinicalEntities([
+          ...diseases.map(record => toClinicalEntity(record, 'diseases')),
+          ...symptoms.map(record => toClinicalEntity(record, 'symptoms')),
+        ]);
+      })
+      .catch(reason => {
+        if (!controller.signal.aborted) {
+          setClinicalError(reason instanceof Error ? reason.message : 'Could not load diseases and symptoms.');
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setClinicalLoading(false);
+      });
+    return () => controller.abort();
+  }, [reload]);
+
+  const searchableEntities = useMemo(
+    () => [...entities.filter(entity => entity.domain !== 'diseases' && entity.domain !== 'symptoms'), ...clinicalEntities],
+    [clinicalEntities],
+  );
+  const matches = useMemo(() => searchableEntities.filter(entity => {
+    const text = [
+      entity.id,
+      entity.name,
+      entity.type,
+      entity.description,
+      ...Object.values(entity.properties ?? {}),
+      ...(entity.relations ?? []).flatMap(relation => [relation.predicate, relation.target]),
+    ].join(' ').toLowerCase();
     return (filter === 'all' || entity.domain === filter) && text.includes(query.trim().toLowerCase());
-  }),[filter,query]);
+  }),[filter,query,searchableEntities]);
 
   return <div className="page-flow inner-page">
     <div className="page-topline"><span className="eyebrow"><span className="eyebrow-indicator"/> DISCOVERY ENGINE</span><span className="topline-right">EXPLORE / SEARCH</span></div>
@@ -20,6 +62,8 @@ export default function SearchPage() {
       <div className="studio-filters"><span className="filters-label"><SlidersHorizontal size={18}/> Narrow your search</span><div className="filters-wrap"><button className={filter==='all'?'filter-chip active':'filter-chip'} onClick={()=>setFilter('all')}>Everything</button>{domains.map(d=><button className={filter===d.slug?'filter-chip active':'filter-chip'} key={d.slug} onClick={()=>setFilter(d.slug)}>{d.title}</button>)}</div></div>
     </section>
     <div className="section-intro result-intro"><div><span className="eyebrow">KNOWLEDGE LIBRARY</span><h2>{matches.length} {matches.length===1?'result':'results'} found<span className="heading-dot">.</span></h2><p>{query ? `Showing concepts related to “${query}”` : 'Browse the concepts that make up the medical atlas.'}</p></div><span className="result-sort"><Filter size={17}/> All results</span></div>
+    {clinicalLoading && <p className="api-loading-message" role="status">Loading live diseases and symptoms…</p>}
+    {clinicalError && <div className="api-error-message" role="alert"><p>Live diseases and symptoms could not be loaded: {clinicalError}</p><button className="button-primary" onClick={()=>setReload(value=>value+1)}>Retry <ArrowRight size={17}/></button></div>}
     {matches.length ? <div className="entity-grid">{matches.map(entity=><EntityCard key={entity.id} item={entity}/>)}</div> : <div className="empty-state"><span><SearchX size={38}/></span><h3>No matching concepts</h3><p>Try a broader term or remove a filter to explore more of the knowledge base.</p><button className="button-primary" onClick={()=>{setParams({});setFilter('all');}}>Clear search <ArrowRight size={17}/></button></div>}
   </div>;
 }
